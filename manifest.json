@@ -1,0 +1,17 @@
+{
+  "name": "나의 성장 - 스마트싱스 운동 기록",
+  "short_name": "나의 성장",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f6f0",
+  "theme_color": "#f4f6f0",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2936/2936886.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
