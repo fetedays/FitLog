@@ -543,11 +543,11 @@
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block font-bold text-[#5a6b5e] mb-1">운동 시간 (분)</label>
-            <input type="number" id="inputDurationMin" min="1" value="25" class="w-full bg-[#f4f6f0] border border-[#e5e9df] rounded-xl px-3 py-2 text-sm font-black text-[#193222] focus:outline-none focus:border-[#1e3b28]">
+            <input type="number" id="inputDurationMin" min="1" value="60" class="w-full bg-[#f4f6f0] border border-[#e5e9df] rounded-xl px-3 py-2 text-sm font-black text-[#193222] focus:outline-none focus:border-[#1e3b28]">
           </div>
           <div>
             <label class="block font-bold text-[#5a6b5e] mb-1">인터벌 라운드 / 세트</label>
-            <input type="number" id="inputRounds" min="1" value="8" class="w-full bg-[#f4f6f0] border border-[#e5e9df] rounded-xl px-3 py-2 text-sm font-black text-[#193222] focus:outline-none focus:border-[#1e3b28]">
+            <input type="number" id="inputRounds" min="1" value="1" class="w-full bg-[#f4f6f0] border border-[#e5e9df] rounded-xl px-3 py-2 text-sm font-black text-[#193222] focus:outline-none focus:border-[#1e3b28]">
           </div>
         </div>
 
@@ -1659,8 +1659,8 @@
       document.getElementById('editRecordId').value = '';
       selectType('런닝');
       document.getElementById('customTypeInput').value = '';
-      document.getElementById('inputDurationMin').value = '25';
-      document.getElementById('inputRounds').value = '8';
+      document.getElementById('inputDurationMin').value = '60';
+      document.getElementById('inputRounds').value = '1';
       document.getElementById('inputNotes').value = '';
 
       const now = new Date();
