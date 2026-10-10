@@ -1,0 +1,2393 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>성장 리포트 - 스마트싱스 운동 기록</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Pretendard Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- PWA Meta -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#f4f6f0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <style>
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      background-color: #f4f6f0;
+      color: #193222;
+      padding-bottom: calc(6.75rem + env(safe-area-inset-bottom, 0px));
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    @keyframes pulse-gold {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.4); }
+      50% { transform: scale(1.01); box-shadow: 0 0 12px 2px rgba(234, 179, 8, 0.3); }
+    }
+    .reward-gold-glow {
+      animation: pulse-gold 2.5s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-[#20402b] selection:text-white">
+
+  <!-- ============================================================ -->
+  <!-- 메인 뷰 컨테이너 (최대 너비 430px 모바일 규격) -->
+  <!-- ============================================================ -->
+  <div class="max-w-md w-full mx-auto px-4 pt-3.5 pb-8">
+
+    <!-- ========================================================== -->
+    <!-- 공통 상단 헤더: 컴팩트 타이틀 + 우측 단일 설정(시트 연동) 진입점 -->
+    <!-- ========================================================== -->
+    <header class="flex items-center justify-between mb-3.5">
+      <div>
+        <h1 id="headerMainTitle" class="text-xl font-black text-[#193222] tracking-tight leading-tight">성장 리포트</h1>
+        <p id="headerSubTitle" class="text-xs text-[#3d5243] font-medium mt-0.5">
+          기록이 쌓일수록 달라지는 나를 확인해봐.
+        </p>
+      </div>
+
+      <!-- 단일화된 설정 & 구글 시트 연동 버튼 (터치 영역 44px 보장) -->
+      <button id="btnOpenMenu" class="min-h-[44px] px-3 rounded-2xl bg-white border border-[#dce3d5] hover:bg-[#fafbf9] text-[#193222] flex items-center space-x-1.5 shadow-2xs active:scale-95 transition flex-shrink-0" title="구글 시트 연동 및 설정">
+        <svg class="w-4 h-4 text-[#1e3b28]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        </svg>
+        <span class="text-xs font-bold">시트 연동</span>
+      </button>
+    </header>
+
+    <!-- ========================================================== -->
+    <!-- [VIEW A] 성장 리포트 탭 (기본 메인 대시보드) -->
+    <!-- ========================================================== -->
+    <div id="viewGrowth" class="space-y-3.5">
+
+      <!-- ======================================================== -->
+      <!-- 1) 퀘스트 히어로 카드 (월간 퀘스트 + 연간 퀘스트 & 페이스/마일스톤) -->
+      <!-- ======================================================== -->
+      <section class="p-4 rounded-3xl bg-gradient-to-br from-[#162f1e] via-[#1a3824] to-[#112417] text-white shadow-lg border border-[#2b4c34] space-y-3">
+        
+        <!-- 상단 헤더: 월간/연간 퀘스트 탭 전환 & 우측 히스토리/퀘스트 편집 버튼 (터치 영역 44px) -->
+        <div class="flex items-center justify-between border-b border-[#2c4e36] pb-2">
+          <!-- 월간 / 연간 퀘스트 세그먼트 탭 -->
+          <div class="flex items-center p-1 rounded-xl bg-[#0e2014] border border-[#294a33] text-xs font-bold">
+            <button id="btnGoalTabMonth" class="min-h-[36px] px-2.5 py-1 rounded-lg bg-[#284f36] text-[#eef7e6] shadow-sm transition flex items-center space-x-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              <span>월간 퀘스트</span>
+            </button>
+            <button id="btnGoalTabYear" class="min-h-[36px] px-2.5 py-1 rounded-lg text-[#c7dcc9] hover:text-white transition flex items-center space-x-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+              <span>연간 퀘스트</span>
+            </button>
+          </div>
+
+          <!-- 우측: 히스토리 & 퀘스트 편집 (보이는 크기는 유지하되 터치 영역 44px 확보) -->
+          <div class="flex items-center -mr-1">
+            <button id="btnOpenGoalHistory" class="min-h-[44px] px-1.5 flex items-center justify-center group" title="지난 퀘스트 달성 히스토리">
+              <span class="px-2.5 py-1.5 rounded-xl bg-[#254831] group-hover:bg-[#315d40] text-[#e6f2df] text-xs font-bold transition flex items-center space-x-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>히스토리</span>
+              </span>
+            </button>
+            <button id="btnOpenGoalModal" class="min-h-[44px] px-1.5 flex items-center justify-center group" title="퀘스트 및 보상 편집">
+              <span class="px-2.5 py-1.5 rounded-xl bg-[#254831] group-hover:bg-[#315d40] text-[#e6f2df] text-xs font-bold transition flex items-center space-x-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                <span>목표 편집</span>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 퀘스트 진행 게이지 바 & 마일스톤 -->
+        <div class="space-y-2">
+          <div class="flex justify-between items-baseline">
+            <div>
+              <div class="flex items-center space-x-1.5">
+                <span class="text-xs text-[#d6e8d8] font-bold" id="goalTargetSubLabel">10월 퀘스트</span>
+                <span id="goalMilestoneBadge" class="text-xs px-2 py-0.5 rounded-full bg-[#254831] text-[#d5f0b8] font-bold">진행 중</span>
+              </div>
+              <div class="font-black text-white text-xl tracking-tight mt-0.5">
+                <span id="goalCurrentCount">0</span>
+                <span class="text-xs text-[#d0e3d2] font-semibold">/ <span id="goalTargetCount">12</span>회 달성</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-xs text-[#d0e3d2] font-semibold block" id="goalCurrentPaceLabel">현재 주 0회 페이스</span>
+              <span class="font-black text-xl text-[#d2f0b4]" id="goalPercentText">0%</span>
+            </div>
+          </div>
+
+          <!-- 마일스톤(50%, 75%) 눈금이 포함된 프로그레스 바 -->
+          <div class="relative pt-1 pb-0.5">
+            <div class="w-full h-3.5 bg-[#0d1d12] rounded-full overflow-hidden p-0.5 border border-[#2d5238] relative">
+              <div id="goalProgressBar" class="h-full bg-gradient-to-r from-[#6ca162] via-[#9bd184] to-[#c7e5a8] rounded-full transition-all duration-700 shadow-sm" style="width: 0%"></div>
+              <!-- 50% & 75% 구분선 -->
+              <div class="absolute top-0 bottom-0 left-1/2 w-0.5 bg-[#1a3824]/80 pointer-events-none"></div>
+              <div class="absolute top-0 bottom-0 left-3/4 w-0.5 bg-[#1a3824]/80 pointer-events-none"></div>
+            </div>
+            <div class="flex justify-between text-xs text-[#c7dcc9] font-medium mt-1 px-0.5">
+              <span id="goalRemainingText" class="text-[#eef7e6] font-bold">7회 남았어! 주 2회만 해도 달성이야</span>
+              <span id="goalPeriodScopeLabel" class="text-[#d0e3d2] flex-shrink-0 ml-2">50% · 75% 마일스톤</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 퀘스트 달성 보상 (Reward) 박스 -->
+        <div id="goalRewardContainer" class="p-3 rounded-2xl bg-[#102216] border border-[#2d5037] flex items-center space-x-2.5 transition">
+          <div class="w-8 h-8 rounded-xl bg-[#21422c] text-[#d5f0b8] flex items-center justify-center shadow-sm flex-shrink-0" id="goalRewardIcon">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path></svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <span class="text-xs font-bold text-[#c7dcc9] block" id="goalRewardLabel">퀘스트 달성 보상</span>
+            <p class="text-xs font-bold text-white truncate mt-0.5" id="goalRewardText">치팅데이: 치킨 먹기</p>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- 기간 필터 탭 (최근 1주 / 최근 4주 / 전체) -->
+      <div class="space-y-1.5">
+        <div class="grid grid-cols-3 p-1 rounded-2xl bg-[#dfe5d8] text-xs font-bold text-[#3d5243]">
+          <button data-period="1w" class="period-btn min-h-[38px] py-2 rounded-xl transition">최근 1주</button>
+          <button data-period="4w" class="period-btn min-h-[38px] py-2 rounded-xl bg-white text-[#193222] shadow-sm transition">최근 4주</button>
+          <button data-period="all" class="period-btn min-h-[38px] py-2 rounded-xl transition">전체</button>
+        </div>
+        <div class="flex justify-between items-center px-1 text-xs font-semibold text-[#3d5243]">
+          <span id="growthPeriodRange">날짜 계산 중...</span>
+          <span id="growthPeriodCount">총 0회 기록</span>
+        </div>
+      </div>
+
+      <!-- 2) 변화 하이라이트 배너 카드 -->
+      <section class="p-4 rounded-3xl bg-[#e6eed9] border border-[#cfe0ba] shadow-2xs space-y-1">
+        <div class="flex items-center space-x-1.5">
+          <div class="w-6 h-6 rounded-lg bg-[#cfe2b8] flex items-center justify-center text-[#193222]">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+          </div>
+          <span class="text-xs font-bold text-[#2d4534]" id="growthBannerPeriodLabel">운동 페이스 분석</span>
+        </div>
+        <h2 class="text-base font-black text-[#193222] tracking-tight pt-0.5" id="growthHighlightText">
+          운동 기록을 분석하고 있어.
+        </h2>
+        <p class="text-xs text-[#354a3b] font-semibold" id="growthCompareSub">
+          데이터 계산 중
+        </p>
+      </section>
+
+      <!-- 3) 성장 요약 & 나의 최고 기록 통합 카드 -->
+      <section class="p-4 rounded-3xl bg-white border border-[#dce3d5] shadow-2xs space-y-4">
+        
+        <!-- 섹션 헤더 -->
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-[#3d5243] block">시간 · 횟수 · 변화</span>
+            <h3 class="text-base font-black text-[#193222] tracking-tight mt-0.5" id="recordSectionTitle">성장 요약</h3>
+          </div>
+          <span class="text-xs px-2.5 py-1 rounded-full bg-[#eef2e8] text-[#2d4534] font-bold" id="recordPeriodBadge">1R = 1라운드</span>
+        </div>
+
+        <!-- 3-1. 상단 4분할 지표 그리드: 운동 시간 / 운동 횟수 / 평균 시간 / 최애 종목 -->
+        <div class="grid grid-cols-2 gap-2.5">
+          
+          <!-- 1. 운동 시간 카드 (클릭 시 최고 기록 토글 - 다른 카드와 동일하게 아이콘 + 쉐브론 배치) -->
+          <button type="button" id="btnTogglePb" class="text-left p-3.5 rounded-2xl bg-[#fafbf9] border border-[#d6e2c9] hover:border-[#1e3b28] hover:bg-[#f3f7ee] cursor-pointer transition group">
+            <div class="flex items-center justify-between text-[#3d5243]">
+              <span class="text-xs font-bold">운동 시간</span>
+              <div class="flex items-center space-x-1 text-[#1e3b28]">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <svg id="pbToggleChevron" class="w-3.5 h-3.5 transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+              </div>
+            </div>
+            <div class="text-lg font-black text-[#193222] mt-1.5 tracking-tight" id="growthTotalDuration">0분</div>
+            <p class="text-xs text-[#2d4534] mt-1 font-semibold truncate flex items-center space-x-0.5" id="growthDurationCompare">
+              <span>눌러서 최고 기록 보기</span>
+            </p>
+          </button>
+
+          <!-- 2. 운동 횟수 카드 -->
+          <div class="p-3.5 rounded-2xl bg-[#fafbf9] border border-[#e5ebe0]">
+            <div class="flex items-center justify-between text-[#3d5243]">
+              <span class="text-xs font-bold">운동 횟수</span>
+              <svg class="w-4 h-4 text-[#3d5243]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            </div>
+            <div class="text-lg font-black text-[#193222] mt-1.5 tracking-tight" id="growthTotalCount">0회</div>
+            <p class="text-xs text-[#3d5243] mt-1 font-medium truncate" id="growthCountCompare">주 평균 0회</p>
+          </div>
+
+          <!-- 3. 평균 시간 카드 -->
+          <div class="p-3.5 rounded-2xl bg-[#fafbf9] border border-[#e5ebe0]">
+            <div class="flex items-center justify-between text-[#3d5243]">
+              <span class="text-xs font-bold">평균 시간</span>
+              <svg class="w-4 h-4 text-[#3d5243]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            </div>
+            <div class="text-lg font-black text-[#193222] mt-1.5 tracking-tight" id="growthAvgDuration">0분</div>
+            <p class="text-xs text-[#3d5243] mt-1 font-medium truncate" id="growthAvgRoundsSub">회당 평균 0라운드</p>
+          </div>
+
+          <!-- 4. 최애 종목 카드 -->
+          <div class="p-3.5 rounded-2xl bg-[#fafbf9] border border-[#e5ebe0]">
+            <div class="flex items-center justify-between text-[#3d5243]">
+              <span class="text-xs font-bold">최애 종목</span>
+              <span id="growthFavIcon" class="text-[#1b7a43]">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              </span>
+            </div>
+            <div class="text-base font-black text-[#193222] mt-1.5 tracking-tight truncate" id="growthFavType">-</div>
+            <p class="text-xs text-[#3d5243] mt-1 font-medium truncate" id="growthFavRatio">전체 운동의 0%</p>
+          </div>
+
+        </div>
+
+        <!-- 3-2. 운동 시간 클릭 시 펼쳐지는 나의 최고 기록 패널 (영문 병기 제거) -->
+        <div id="pbDetailPanel" class="p-3.5 rounded-2xl bg-[#f3f7ec] border border-[#cfe0ba] space-y-2.5 transition-all duration-300">
+          <div class="flex items-center justify-between border-b border-[#dce8cc] pb-2">
+            <span class="text-xs font-black text-[#193222] flex items-center space-x-1.5">
+              <svg class="w-4 h-4 text-[#b45309]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+              <span>나의 최고 기록</span>
+            </span>
+            <span class="text-xs text-[#3d5243] font-semibold">전체 기록 기준</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2">
+            <div class="p-2.5 rounded-xl bg-white border border-[#dce6d0] text-center">
+              <span class="text-xs font-bold text-[#3d5243] block">최장 시간</span>
+              <div class="text-base font-black text-[#193222] mt-0.5" id="growthPbDuration">0분</div>
+              <span class="text-xs text-[#3d5243] font-medium truncate block mt-0.5" id="growthPbDate">-</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-white border border-[#dce6d0] text-center">
+              <span class="text-xs font-bold text-[#3d5243] block">최다 라운드</span>
+              <div class="text-base font-black text-[#193222] mt-0.5" id="growthPbRounds">0R</div>
+              <span class="text-xs text-[#3d5243] font-medium truncate block mt-0.5" id="growthPbRoundsDate">-</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-white border border-[#dce6d0] text-center">
+              <span class="text-xs font-bold text-[#3d5243] block">주간 최다</span>
+              <div class="text-base font-black text-[#193222] mt-0.5" id="growthPbWeeklyMax">0회</div>
+              <span class="text-xs text-[#3d5243] font-medium truncate block mt-0.5" id="growthPbWeeklyLabel">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3-3. 시간 추이 라인 차트 (날짜 비례 X축 + 첫/끝/최고점 값 + 평균선 + 시작/끝 날짜) -->
+        <div class="space-y-2 pt-2 border-t border-[#e5ebe0]">
+          <div class="flex justify-between items-center text-xs font-bold text-[#193222]">
+            <div class="flex items-center space-x-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#1b7a43]"></span>
+              <span id="chartDurationTitle">시간 추이</span>
+              <span class="text-xs text-[#3d5243] font-medium">(분)</span>
+            </div>
+            <span class="text-xs font-semibold text-[#2d4534]" id="growthChartAvgDuration">평균 0분</span>
+          </div>
+          <div class="w-full h-40 bg-[#fafbf9] rounded-2xl px-3 py-2.5 border border-[#e5ebe0] relative flex items-center justify-center">
+            <svg id="svgGrowthChart" class="w-full h-full overflow-visible"></svg>
+          </div>
+        </div>
+
+        <!-- 3-4. 빈도 바 차트 ("주차별 빈도" 등 반복 단어 제거) -->
+        <div class="space-y-2 pt-2 border-t border-[#e5ebe0]">
+          <div class="flex justify-between items-center text-xs font-bold text-[#193222]">
+            <div class="flex items-center space-x-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#2d6a4f]"></span>
+              <span id="barFrequencyTitle">주차별 빈도</span>
+            </div>
+            <span class="text-xs font-semibold text-[#2d4534]" id="growthWeeklyAvgText">주 평균 0회</span>
+          </div>
+          <div class="w-full h-28 bg-[#fafbf9] rounded-2xl p-3 border border-[#e5ebe0] flex items-end justify-between" id="growthBarContainer">
+            <!-- 자바스크립트로 기간별 맞춤 막대 렌더링 -->
+          </div>
+        </div>
+
+      </section>
+
+      <!-- 4) 종목 밸런스 바 (색약/야외 구분 명확한 종목 컬러 + 바 내부 횟수 표기) -->
+      <section class="p-4 rounded-3xl bg-white border border-[#dce3d5] shadow-2xs space-y-2.5">
+        <div class="flex items-center justify-between text-xs">
+          <span class="font-black text-sm text-[#193222]" id="balanceSectionTitle">종목 밸런스</span>
+          <span class="text-xs font-semibold text-[#3d5243]" id="growthBalanceSub">총 0회 기록</span>
+        </div>
+        
+        <!-- 세그먼트 내부 횟수 표시가 들어가는 가로 비율 바 -->
+        <div class="w-full h-7 bg-[#eef2e8] rounded-xl overflow-hidden flex text-xs font-extrabold text-white" id="balanceProgressBar">
+          <!-- 동적 렌더링 -->
+        </div>
+
+        <!-- 범례 (리스트 종목 색상과 100% 통일) -->
+        <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-[#2d4534] pt-0.5" id="balanceLegend">
+          <!-- 동적 렌더링 -->
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- [VIEW B] 운동 기록 탭 (주간/월간 접이식 캘린더 + 그룹핑 리스트) -->
+    <!-- ========================================================== -->
+    <div id="viewRecords" class="hidden space-y-3.5">
+
+      <!-- 상단 이번 주 요약 미니 카드 (가로 3열: 이번 주 시간 / 운동 횟수 / 주간 연속 루틴) -->
+      <div class="grid grid-cols-3 gap-2 p-3.5 rounded-3xl bg-white border border-[#dce3d5] shadow-2xs text-center">
+        <div class="p-1">
+          <span class="text-xs font-bold text-[#3d5243] block">이번 주 시간</span>
+          <span class="text-base font-black text-[#193222] mt-0.5 block" id="feedWeeklyDuration">0분</span>
+        </div>
+        <div class="p-1 border-x border-[#e5ebe0]">
+          <span class="text-xs font-bold text-[#3d5243] block">이번 주 횟수</span>
+          <span class="text-base font-black text-[#1b7a43] mt-0.5 block" id="feedWeeklyCount">0회</span>
+        </div>
+        <div class="p-1">
+          <span class="text-xs font-bold text-[#3d5243] block" id="feedStreakLabel">연속 루틴</span>
+          <span class="text-base font-black text-[#b45309] mt-0.5 block" id="feedStreakCount">0주 연속</span>
+        </div>
+      </div>
+
+      <!-- 캘린더 뷰 카드 (기본: 컴팩트 주간 스트립 / 펼치기: 월 전체 보기) -->
+      <section class="p-4 rounded-3xl bg-white border border-[#dce3d5] shadow-2xs space-y-2.5">
+        <!-- 캘린더 상단 네비게이션 (모든 버튼 터치 영역 44px 확보) -->
+        <div class="flex items-center justify-between border-b border-[#e5ebe0] pb-2">
+          <div class="flex items-center space-x-2">
+            <span class="text-sm font-black text-[#193222]" id="calCurrentMonthTitle">2026년 10월</span>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-[#eef2e8] text-[#2d4534] font-bold" id="calMonthWorkoutCount">0일 운동</span>
+          </div>
+
+          <div class="flex items-center -mr-1">
+            <button id="btnCalPrev" type="button" class="min-w-[44px] min-h-[44px] flex items-center justify-center group" title="이전">
+              <span class="w-7 h-7 rounded-full bg-[#f0f3ec] group-hover:bg-[#dfe5d8] flex items-center justify-center text-sm text-[#193222] font-bold transition">&lsaquo;</span>
+            </button>
+            <button id="btnCalToday" type="button" class="min-h-[44px] px-1 flex items-center justify-center group" title="오늘로 이동">
+              <span class="px-2.5 py-1 rounded-full bg-[#f0f3ec] group-hover:bg-[#dfe5d8] text-xs text-[#2d4534] font-bold transition">오늘</span>
+            </button>
+            <button id="btnCalNext" type="button" class="min-w-[44px] min-h-[44px] flex items-center justify-center group" title="다음">
+              <span class="w-7 h-7 rounded-full bg-[#f0f3ec] group-hover:bg-[#dfe5d8] flex items-center justify-center text-sm text-[#193222] font-bold transition">&rsaquo;</span>
+            </button>
+            <button id="btnToggleCalExpand" type="button" class="min-h-[44px] pl-1 pr-1.5 flex items-center justify-center group" title="월 전체 보기 전환">
+              <span class="px-2.5 py-1 rounded-full bg-[#e6eed9] group-hover:bg-[#d5e5c0] text-xs text-[#193222] font-bold transition flex items-center space-x-1">
+                <span id="calExpandBtnText">월 전체</span>
+                <svg id="calExpandIcon" class="w-3.5 h-3.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 요일 헤더 -->
+        <div class="grid grid-cols-7 text-center text-xs font-bold text-[#3d5243]">
+          <span class="text-rose-600">일</span>
+          <span>월</span>
+          <span>화</span>
+          <span>수</span>
+          <span>목</span>
+          <span>금</span>
+          <span class="text-blue-600">토</span>
+        </div>
+
+        <!-- 날짜 그리드 (주간 스트립 또는 월간 전체) -->
+        <div class="grid grid-cols-7 gap-y-1 text-center" id="calDaysGrid">
+          <!-- 자바스크립트로 렌더링 -->
+        </div>
+
+        <!-- 캘린더 하단 범례 및 선택 날짜 필터 해제 바 -->
+        <div class="flex items-center justify-between pt-1 text-xs text-[#3d5243]">
+          <div class="flex items-center space-x-2.5 font-semibold">
+            <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-[#1b7a43]"></span><span>런닝</span></span>
+            <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-[#2563eb]"></span><span>자전거</span></span>
+            <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-[#d97706]"></span><span>맨몸운동</span></span>
+          </div>
+          <span class="text-xs text-[#3d5243] font-medium" id="calHelperHint">날짜를 누르면 그날만 필터돼</span>
+        </div>
+
+        <!-- 날짜 필터 활성화 시 나타나는 배너 -->
+        <div id="calFilterNotice" class="hidden flex items-center justify-between p-2.5 rounded-2xl bg-[#eef4e4] border border-[#cfe0ba] text-xs">
+          <div class="flex items-center space-x-1.5 text-[#193222] font-bold">
+            <svg class="w-4 h-4 text-[#1b7a43]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+            <span id="calFilterText">10/10 기록만 보는 중</span>
+          </div>
+          <button id="btnClearDateFilter" type="button" class="min-h-[36px] px-2.5 py-1 rounded-xl bg-white border border-[#cfe0ba] text-xs font-bold text-[#193222] hover:bg-[#f4f6f0] transition">
+            전체보기 ✕
+          </button>
+        </div>
+      </section>
+
+      <!-- 종목 필터 칩 바 (SVG 라인 아이콘 + 종목 컬러 연동) -->
+      <div class="flex items-center space-x-1.5 overflow-x-auto py-0.5 text-xs font-bold custom-scrollbar">
+        <button data-filter="all" class="filter-chip min-h-[38px] px-3.5 py-1.5 rounded-full bg-[#193222] text-white transition shadow-2xs flex items-center space-x-1.5 flex-shrink-0">
+          <span>전체</span>
+        </button>
+        <button data-filter="런닝" class="filter-chip min-h-[38px] px-3.5 py-1.5 rounded-full bg-white text-[#2d4534] border border-[#dce3d5] hover:bg-[#fafbf9] transition flex items-center space-x-1.5 flex-shrink-0">
+          <span class="w-2 h-2 rounded-full bg-[#1b7a43]"></span>
+          <span>런닝</span>
+        </button>
+        <button data-filter="실내 자전거" class="filter-chip min-h-[38px] px-3.5 py-1.5 rounded-full bg-white text-[#2d4534] border border-[#dce3d5] hover:bg-[#fafbf9] transition flex items-center space-x-1.5 flex-shrink-0">
+          <span class="w-2 h-2 rounded-full bg-[#2563eb]"></span>
+          <span>실내 자전거</span>
+        </button>
+        <button data-filter="맨몸운동" class="filter-chip min-h-[38px] px-3.5 py-1.5 rounded-full bg-white text-[#2d4534] border border-[#dce3d5] hover:bg-[#fafbf9] transition flex items-center space-x-1.5 flex-shrink-0">
+          <span class="w-2 h-2 rounded-full bg-[#d97706]"></span>
+          <span>맨몸운동</span>
+        </button>
+        <button data-filter="기타" class="filter-chip min-h-[38px] px-3.5 py-1.5 rounded-full bg-white text-[#2d4534] border border-[#dce3d5] hover:bg-[#fafbf9] transition flex items-center space-x-1.5 flex-shrink-0">
+          <span class="w-2 h-2 rounded-full bg-[#64748b]"></span>
+          <span>기타</span>
+        </button>
+      </div>
+
+      <!-- 운동 기록 리스트 카드 (월별 그룹 헤더 + 56px 고정 날짜 타일 + 중복 시간 제거 + 정확한 더보기 개수) -->
+      <section class="rounded-3xl bg-white border border-[#dce3d5] shadow-2xs overflow-hidden">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-[#e5ebe0]">
+          <div class="flex items-center space-x-1.5">
+            <span class="text-sm font-black text-[#193222]" id="feedListHeading">지난 기록 12개</span>
+          </div>
+          <span class="text-xs text-[#3d5243] font-semibold" id="feedSortNotice">1R = 1라운드 · 최신순</span>
+        </div>
+
+        <!-- 피드 목록 컨테이너 (구분선 좌우 끝까지 일관되게 연결) -->
+        <div id="feedRecordList" class="divide-y divide-[#e5ebe0]">
+          <!-- 자바스크립트로 월별 그룹 헤더 + 행 렌더링 -->
+        </div>
+
+        <!-- 더 보기 버튼 (남은 개수 정확히 표기: 예 "2개 더 보기 (10/12)") -->
+        <div id="feedLoadMoreContainer" class="p-3 border-t border-[#e5ebe0] text-center hidden">
+          <button id="btnFeedLoadMore" type="button" class="w-full min-h-[44px] py-2.5 rounded-2xl bg-[#f0f3ec] hover:bg-[#e2ead8] text-[#193222] text-xs font-bold transition flex items-center justify-center space-x-1.5">
+            <span id="feedLoadMoreText">2개 더 보기 (10/12)</span>
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 하단 플로팅 내비게이션 바 + 엄지 영역 중앙 [+ 운동 기록] 버튼 -->
+  <!-- ============================================================ -->
+  <div class="fixed bottom-4 left-0 right-0 z-40 px-4 pointer-events-none" style="padding-bottom: env(safe-area-inset-bottom, 0px);">
+    <div class="max-w-sm mx-auto pointer-events-auto">
+      <div class="bg-white/95 backdrop-blur-md rounded-full p-1.5 shadow-xl border border-[#dce3d5] flex items-center justify-between gap-1 text-xs font-bold">
+        <!-- 탭 1: 성장 리포트 -->
+        <button id="tabGrowthBtn" type="button" class="flex-1 min-h-[44px] py-2.5 rounded-full bg-[#e3ecd5] text-[#193222] flex items-center justify-center space-x-1.5 transition">
+          <svg class="w-4 h-4 text-[#1e3b28]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+          <span>성장 리포트</span>
+        </button>
+
+        <!-- 중앙 엄지 존: + 운동 기록 추가 버튼 -->
+        <button id="btnAddRecordMain" type="button" class="min-h-[44px] px-4 py-2.5 rounded-full bg-[#193222] hover:bg-[#112417] text-white font-black shadow-md active:scale-95 transition flex items-center space-x-1 flex-shrink-0" title="새 운동 기록 추가">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+          <span>운동 기록</span>
+        </button>
+
+        <!-- 탭 2: 운동 기록 목록 -->
+        <button id="tabRecordsBtn" type="button" class="flex-1 min-h-[44px] py-2.5 rounded-full text-[#3d5243] hover:text-[#193222] flex items-center justify-center space-x-1.5 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+          <span>기록 내역</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 모달 1: 월간/연간 퀘스트 & 보상 편집 모달 -->
+  <!-- ============================================================ -->
+  <div id="goalModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 space-y-4 shadow-2xl text-xs text-[#193222]">
+      <div class="flex items-center justify-between border-b border-[#e5ebe0] pb-3">
+        <h3 class="font-black text-sm flex items-center space-x-2">
+          <svg class="w-4 h-4 text-[#1b7a43]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+          <span>퀘스트 & 보상 편집</span>
+        </h3>
+        <button id="btnCloseGoalModal" type="button" class="min-w-[44px] min-h-[44px] -mr-2 flex items-center justify-center rounded-lg text-[#3d5243] hover:text-[#193222]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <form id="goalForm" class="space-y-3.5">
+        <!-- 월간 퀘스트 입력 -->
+        <div class="p-3.5 rounded-2xl bg-[#fafbf9] border border-[#e5ebe0] space-y-2.5">
+          <span class="font-black text-xs text-[#1e3b28] block">월간 퀘스트</span>
+          <div>
+            <label class="block font-bold text-[#3d5243] mb-1">한 달 목표 횟수 (회)</label>
+            <input type="number" id="inputMonthGoalCount" min="1" max="60" value="12" class="w-full bg-white border border-[#dce3d5] rounded-xl px-3 py-2 text-sm font-black text-[#193222] focus:outline-none focus:border-[#1e3b28]">
+          </div>
+          <div>
+            <label class="block font-bold text-[#3d5243] mb-1">퀘스트 달성 보상</label>
+            <input type="text" id="inputMonthGoalReward" placeholder="예: 치팅데이: 치킨 먹기" class="w-full bg-white border border-[#dce3d5] rounded-xl px-3 py-2 text-xs font-bold text-[#193222] focus:outline-none focus:border-[#1e3b28]">
+          </div>
+        </div>
+
+        <!-- 연간 퀘스트 입력 -->
+        <div class="p-3.5 rounded-2xl bg-[#fafbf9] border border-[#e5ebe0] space-y-2.5">
+          <span class="font-black text-xs text-[#1e3b28] block">2026년 연간 퀘스트</span>
+          <div>
+            <label class="block font-bold text-[#3d5243] mb-1">1년 누적 목표 횟수 (회)</label>
+            <input type="number" id="inputYearGoalCount" min="1" max="500" value="120" class="w-full bg-white border border-[#dce3d5] rounded-xl px-3 py-2 text-sm font-black text-[#193222] focus:outline-none focus:border-[#1e3b28]">
+          </div>
+          <div>
+            <label class="block font-bold text-[#3d5243] mb-1">연간 퀘스트 보상</label>
+            <input type="text" id="inputYearGoalReward" placeholder="예: 제주도: 힐링 여행" class="w-full bg-white border border-[#dce3d5] rounded-xl px-3 py-2 text-xs font-bold text-[#193222] focus:outline-none focus:border-[#1e3b28]">
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-end space-x-2">
+          <button type="button" id="btnCancelGoal" class="min-h-[44px] px-4 py-2 rounded-xl bg-[#f0f3ec] text-[#3d5243] font-bold">취소</button>
+          <button type="submit" class="min-h-[44px] px-5 py-2 rounded-xl bg-[#193222] text-white font-black hover:bg-[#112417] transition">저장하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 모달 2: 퀘스트 달성 히스토리 모달 -->
+  <!-- ============================================================ -->
+  <div id="goalHistoryModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 space-y-4 shadow-2xl text-xs text-[#193222]">
+      <div class="flex items-center justify-between border-b border-[#e5ebe0] pb-3">
+        <h3 class="font-black text-sm flex items-center space-x-2">
+          <svg class="w-4 h-4 text-[#1b7a43]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span>퀘스트 달성 히스토리</span>
+        </h3>
+        <button id="btnCloseGoalHistoryModal" type="button" class="min-w-[44px] min-h-[44px] -mr-2 flex items-center justify-center rounded-lg text-[#3d5243] hover:text-[#193222]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <p class="text-xs text-[#3d5243] font-medium">
+        최근 6개월간 월간 퀘스트 달성률과 획득한 보상 내역이야.
+      </p>
+
+      <div id="goalHistoryList" class="space-y-2 max-h-72 overflow-y-auto custom-scrollbar">
+        <!-- 자바스크립트로 월별 히스토리 렌더링 -->
+      </div>
+
+      <div class="pt-2 flex justify-end">
+        <button id="btnCloseGoalHistoryBtn" type="button" class="w-full min-h-[44px] py-2.5 rounded-xl bg-[#193222] text-white font-black">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 모달 3: 운동 기록 추가 / 수정 모달 -->
+  <!-- ============================================================ -->
+  <div id="recordModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 space-y-4 shadow-2xl text-xs text-[#193222]">
+      <div class="flex items-center justify-between border-b border-[#e5ebe0] pb-3">
+        <h3 id="modalTitle" class="font-black text-sm">운동 기록 추가</h3>
+        <button id="btnCloseRecordModal" type="button" class="min-w-[44px] min-h-[44px] -mr-2 flex items-center justify-center rounded-lg text-[#3d5243] hover:text-[#193222]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <form id="recordForm" class="space-y-3.5">
+        <input type="hidden" id="editRecordId">
+
+        <div>
+          <label class="block font-bold text-[#3d5243] mb-1.5">운동 종목</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" class="type-btn min-h-[42px] p-2 rounded-xl border border-[#cfe0ba] bg-[#eef4e4] text-[#193222] font-bold flex items-center justify-center space-x-1.5" data-type="런닝">
+              <span class="w-2 h-2 rounded-full bg-[#1b7a43]"></span>
+              <span>런닝</span>
+            </button>
+            <button type="button" class="type-btn min-h-[42px] p-2 rounded-xl border border-[#dce3d5] bg-white text-[#3d5243] font-bold flex items-center justify-center space-x-1.5" data-type="실내 자전거">
+              <span class="w-2 h-2 rounded-full bg-[#2563eb]"></span>
+              <span>실내 자전거</span>
+            </button>
+            <button type="button" class="type-btn min-h-[42px] p-2 rounded-xl border border-[#dce3d5] bg-white text-[#3d5243] font-bold flex items-center justify-center space-x-1.5" data-type="맨몸운동">
+              <span class="w-2 h-2 rounded-full bg-[#d97706]"></span>
+              <span>맨몸운동</span>
+            </button>
+          </div>
+          <input type="text" id="customTypeInput" placeholder="직접 입력 (예: 트랙 인터벌, 쿨다운 조깅)" class="mt-2 w-full bg-[#f4f6f0] border border-[#dce3d5] rounded-xl px-3 py-2.5 text-[#193222] font-medium focus:outline-none focus:border-[#1e3b28]">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block font-bold text-[#3d5243] mb-1">운동 시간 (분)</label>
+            <input type="number" id="inputDurationMin" min="1" value="25" class="w-full bg-[#f4f6f0] border border-[#dce3d5] rounded-xl px-3 py-2.5 text-sm font-black text-[#193222] focus:outline-none focus:border-[#1e3b28]">
+          </div>
+          <div>
+            <label class="block font-bold text-[#3d5243] mb-1">인터벌 라운드 (R)</label>
+            <input type="number" id="inputRounds" min="1" value="8" class="w-full bg-[#f4f6f0] border border-[#dce3d5] rounded-xl px-3 py-2.5 text-sm font-black text-[#193222] focus:outline-none focus:border-[#1e3b28]">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-[#3d5243] mb-1">운동 일시</label>
+          <input type="datetime-local" id="inputDateTime" class="w-full bg-[#f4f6f0] border border-[#dce3d5] rounded-xl px-3 py-2.5 text-[#193222] font-semibold focus:outline-none focus:border-[#1e3b28]">
+        </div>
+
+        <div>
+          <label class="block font-bold text-[#3d5243] mb-1">메모 (거리, 강도, 컨디션)</label>
+          <textarea id="inputNotes" rows="2" placeholder="예: 인터벌 8라운드 완주, 호흡 안정적" class="w-full bg-[#f4f6f0] border border-[#dce3d5] rounded-xl px-3 py-2 text-[#193222] focus:outline-none focus:border-[#1e3b28]"></textarea>
+        </div>
+
+        <div class="pt-2 flex space-x-2">
+          <button type="button" id="btnDeleteRecord" class="hidden min-h-[44px] px-4 py-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 font-bold transition">삭제</button>
+          <button type="submit" id="btnSaveRecord" class="flex-1 min-h-[44px] py-2.5 rounded-xl bg-[#193222] hover:bg-[#112417] text-white font-black transition">저장하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 모달 4: 구글 시트 연동 & 앱 설정 모달 -->
+  <!-- ============================================================ -->
+  <div id="menuModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-5 space-y-4 shadow-2xl text-xs text-[#193222]">
+      <div class="flex items-center justify-between border-b border-[#e5ebe0] pb-3">
+        <h3 class="font-black text-sm flex items-center space-x-2">
+          <svg class="w-4 h-4 text-[#1b7a43]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          <span>구글 시트 연동 & 설정</span>
+        </h3>
+        <button id="btnCloseMenuModal" type="button" class="min-w-[44px] min-h-[44px] -mr-2 flex items-center justify-center rounded-lg text-[#3d5243] hover:text-[#193222]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="space-y-3.5">
+        <!-- 원클릭 즉시 동기화 버튼 -->
+        <div class="p-3.5 rounded-2xl bg-[#e6eed9] border border-[#cfe0ba] flex items-center justify-between">
+          <div>
+            <span class="font-bold text-[#193222] block">구글 시트 실시간 동기화</span>
+            <span class="text-xs text-[#2d4534]">스마트싱스 운동 기록 즉시 불러오기</span>
+          </div>
+          <button id="btnModalSyncNow" type="button" class="min-h-[40px] px-3.5 py-2 rounded-xl bg-[#193222] hover:bg-[#112417] text-white font-bold text-xs shadow-sm transition active:scale-95 flex items-center space-x-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <span>동기화</span>
+          </button>
+        </div>
+
+        <div>
+          <label class="block font-bold text-[#3d5243] mb-1">구글 시트 Webhook URL (Apps Script)</label>
+          <input type="url" id="settingGasUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-[#f4f6f0] border border-[#dce3d5] rounded-xl px-3 py-2.5 text-[#193222] font-mono text-xs focus:outline-none focus:border-[#1e3b28]">
+          <p class="text-xs text-[#3d5243] mt-1">스마트싱스 인터벌 드라이버 설정과 동일한 URL을 입력해줘.</p>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-[#f4f6f0] border border-[#dce3d5] space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-[#2d4534]">연동 상태 확인</span>
+            <button id="btnTestConnection" type="button" class="min-h-[36px] px-3 py-1 rounded-lg bg-[#193222] hover:bg-[#112417] text-white font-bold text-xs transition">연결 테스트</button>
+          </div>
+          <p id="connectionStatus" class="text-xs text-[#3d5243]">URL 입력 후 연결 테스트를 눌러봐.</p>
+        </div>
+
+        <div class="pt-2 flex justify-between items-center text-xs">
+          <button id="btnResetDemo" type="button" class="min-h-[44px] px-2 text-[#3d5243] hover:text-[#193222] underline font-semibold">샘플 데이터 복원</button>
+          <button id="btnSaveSettings" type="button" class="min-h-[44px] px-5 py-2 rounded-xl bg-[#193222] hover:bg-[#112417] text-white font-black text-xs transition">설정 저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 토스트 알림 -->
+  <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-xl bg-[#193222] text-white text-xs font-bold shadow-2xl backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300 z-50">
+    알림 내용
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 스크립트 엔진 -->
+  <!-- ============================================================ -->
+  <script>
+    const STORAGE_KEY_RECORDS = 'mygrowth_workout_records';
+    const STORAGE_KEY_GAS_URL = 'mygrowth_gas_url';
+    const STORAGE_KEY_GOALS = 'mygrowth_goals_v2';
+
+    // 기본 탭: 'growth' (성장 리포트)
+    let currentTab = 'growth';
+    let currentFilter = 'all';
+    let currentPeriod = '4w'; // '1w', '4w', 'all'
+    let currentGoalType = 'month'; // 'month' or 'year'
+    let selectedType = '런닝';
+    let records = [];
+
+    // 피드 페이징 상태 (기본 10개씩)
+    let feedVisibleLimit = 10;
+
+    // 최고 기록(PB) 상세 패널 토글 상태
+    let isPbOpen = true;
+
+    // 캘린더 상태 (기본: 주간 스트립 접기 상태 -> 리스트가 첫 화면에 바로 노출됨)
+    let isCalendarExpanded = false;
+    let calYear = new Date().getFullYear();
+    let calMonth = new Date().getMonth(); // 0-indexed
+    let calWeekRefDate = new Date(); // 주간 스트립 기준일
+    let selectedCalendarDate = null; // 'YYYY-MM-DD' 또는 null
+
+    // 월간/연간 퀘스트 기본 상태
+    let userGoals = {
+      monthCount: 12,
+      monthReward: '치팅데이: 치킨 먹기',
+      yearCount: 120,
+      yearReward: '제주도: 힐링 여행'
+    };
+
+    const DEMO_RECORDS = [
+      { id: 'rec_1', date: getFormattedDate(0, 18, 30), type: '런닝', durationSec: 1800, durationText: '30분', rounds: 10, notes: '심폐 지구력 상승, 호흡 안정적', source: 'SmartThings' },
+      { id: 'rec_2', date: getFormattedDate(-2, 19, 0), type: '실내 자전거', durationSec: 1500, durationText: '25분', rounds: 8, notes: '다리 회복용 가벼운 스피닝', source: 'SmartThings' },
+      { id: 'rec_3', date: getFormattedDate(-4, 20, 15), type: '런닝', durationSec: 1500, durationText: '25분', rounds: 8, notes: '2분 질주 / 1분 조깅 페이스 유지', source: 'SmartThings' },
+      { id: 'rec_4', date: getFormattedDate(-7, 18, 0), type: '맨몸운동', durationSec: 1200, durationText: '20분', rounds: 6, notes: '스쿼트 + 런지 타바타', source: '수동' },
+      { id: 'rec_5', date: getFormattedDate(-9, 19, 30), type: '런닝', durationSec: 1620, durationText: '27분', rounds: 9, notes: '후반부 스퍼트 성공', source: 'SmartThings' },
+      { id: 'rec_6', date: getFormattedDate(-12, 18, 45), type: '실내 자전거', durationSec: 1500, durationText: '25분', rounds: 8, notes: '중간 저항 인터벌', source: 'SmartThings' },
+      { id: 'rec_7', date: getFormattedDate(-15, 20, 0), type: '런닝', durationSec: 1380, durationText: '23분', rounds: 8, notes: '야간 러닝 인터벌', source: 'SmartThings' },
+      { id: 'rec_8', date: getFormattedDate(-18, 19, 10), type: '맨몸운동', durationSec: 900, durationText: '15분', rounds: 5, notes: '코어 집중 루틴', source: '수동' },
+      { id: 'rec_9', date: getFormattedDate(-21, 18, 20), type: '실내 자전거', durationSec: 1200, durationText: '20분', rounds: 7, notes: '가벼운 페달링', source: 'SmartThings' },
+      { id: 'rec_10', date: getFormattedDate(-24, 19, 0), type: '런닝', durationSec: 1200, durationText: '20분', rounds: 6, notes: '인터벌 적응 훈련', source: 'SmartThings' },
+      { id: 'rec_11', date: getFormattedDate(-26, 18, 30), type: '런닝', durationSec: 1200, durationText: '20분', rounds: 6, notes: '첫 인터벌 세션 완주', source: 'SmartThings' },
+      { id: 'rec_12', date: getFormattedDate(-28, 20, 0), type: '실내 자전거', durationSec: 900, durationText: '15분', rounds: 5, notes: '워밍업 위주 가벼운 몸풀기', source: 'SmartThings' }
+    ];
+
+    // ------------------------------------------------------------
+    // 종목별 통일된 컬러 & SVG 라인 아이콘 시스템 (색약/야외 시인성 확보)
+    // ------------------------------------------------------------
+    function getCategoryMeta(type) {
+      const t = String(type || '');
+      if (t.includes('런닝') || t.includes('러닝') || t.includes('달리기')) {
+        return {
+          key: '런닝',
+          colorHex: '#1b7a43',
+          bgClass: 'bg-[#1b7a43]',
+          lightBgClass: 'bg-[#e5f4eb]',
+          textClass: 'text-[#1b7a43]',
+          borderClass: 'border-[#b9e2c8]',
+          svg: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>`
+        };
+      }
+      if (t.includes('자전거') || t.includes('싸이클') || t.includes('스피닝')) {
+        return {
+          key: '실내 자전거',
+          colorHex: '#2563eb',
+          bgClass: 'bg-[#2563eb]',
+          lightBgClass: 'bg-[#e8f0fe]',
+          textClass: 'text-[#2563eb]',
+          borderClass: 'border-[#bfd6fc]',
+          svg: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="3.5" stroke-width="2"></circle><circle cx="18.5" cy="17.5" r="3.5" stroke-width="2"></circle><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 6a1 1 0 100-2 1 1 0 000 2zm-3 11.5V14l-3-3 4-3 2 3h2"></path></svg>`
+        };
+      }
+      if (t.includes('맨몸') || t.includes('타바타') || t.includes('근력') || t.includes('코어')) {
+        return {
+          key: '맨몸운동',
+          colorHex: '#d97706',
+          bgClass: 'bg-[#d97706]',
+          lightBgClass: 'bg-[#fef3c7]',
+          textClass: 'text-[#b45309]',
+          borderClass: 'border-[#fde68a]',
+          svg: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 8V16M8 6V18M16 6V18M20 8V16M8 12H16M2 10V14M22 10V14"></path></svg>`
+        };
+      }
+      return {
+        key: '기타',
+        colorHex: '#64748b',
+        bgClass: 'bg-[#64748b]',
+        lightBgClass: 'bg-[#f1f5f9]',
+        textClass: 'text-[#475569]',
+        borderClass: 'border-[#cbd5e1]',
+        svg: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`
+      };
+    }
+
+    // 통일된 날짜 표기 헬퍼 (항상 M/D 형식 반환, 예: 10/10)
+    function formatMD(dateInput) {
+      const d = parseDate(dateInput);
+      return `${d.getMonth() + 1}/${d.getDate()}`;
+    }
+
+    // 날짜 파싱 함수
+    function parseDate(dStr) {
+      if (!dStr) return new Date();
+      if (dStr instanceof Date) return isNaN(dStr.getTime()) ? new Date() : dStr;
+      if (typeof dStr === 'number') {
+        const d = new Date(dStr);
+        return isNaN(d.getTime()) ? new Date() : d;
+      }
+      let s = String(dStr).trim();
+      if (!s) return new Date();
+
+      const koMatch = s.match(/(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})\.?(?:\s*(오전|오후)\s*(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+      if (koMatch) {
+        let hour = Number(koMatch[5] || 0);
+        const isPm = koMatch[4] === '오후';
+        const isAm = koMatch[4] === '오전';
+        if (isPm && hour < 12) hour += 12;
+        if (isAm && hour === 12) hour = 0;
+        return new Date(
+          Number(koMatch[1]),
+          Number(koMatch[2]) - 1,
+          Number(koMatch[3]),
+          hour,
+          Number(koMatch[6] || 0),
+          Number(koMatch[7] || 0)
+        );
+      }
+
+      const stdMatch = s.match(/(\d{4})[-/.]\s*(\d{1,2})[-/.]\s*(\d{1,2})(?:[T\s]+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+      if (stdMatch) {
+        return new Date(
+          Number(stdMatch[1]),
+          Number(stdMatch[2]) - 1,
+          Number(stdMatch[3]),
+          Number(stdMatch[4] || 0),
+          Number(stdMatch[5] || 0),
+          Number(stdMatch[6] || 0)
+        );
+      }
+
+      const clean = s.replace(/\([^)]*\)/g, '').trim();
+      const parsedClean = new Date(clean);
+      if (!isNaN(parsedClean.getTime())) return parsedClean;
+
+      const parsedDirect = new Date(s);
+      if (!isNaN(parsedDirect.getTime())) return parsedDirect;
+
+      if (/^\d{10,13}$/.test(s)) {
+        const num = Number(s);
+        const parsedNum = new Date(s.length === 10 ? num * 1000 : num);
+        if (!isNaN(parsedNum.getTime())) return parsedNum;
+      }
+
+      return new Date();
+    }
+
+    function getFormattedDate(dayOffset, hour, min) {
+      const d = new Date();
+      d.setDate(d.getDate() + dayOffset);
+      d.setHours(hour, min, 0, 0);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      return `${y}-${m}-${day} ${hh}:${mm}:00`;
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      toast.classList.add('opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 2500);
+    }
+
+    // 탭 전환 핸들러 (상단 헤더 문구도 탭에 맞춰 자연스럽게 전환)
+    function switchTab(tab) {
+      currentTab = tab;
+      const tabRecordsBtn = document.getElementById('tabRecordsBtn');
+      const tabGrowthBtn = document.getElementById('tabGrowthBtn');
+      const viewRecords = document.getElementById('viewRecords');
+      const viewGrowth = document.getElementById('viewGrowth');
+      const headerMainTitle = document.getElementById('headerMainTitle');
+      const headerSubTitle = document.getElementById('headerSubTitle');
+
+      if (tab === 'records') {
+        tabRecordsBtn.className = 'flex-1 min-h-[44px] py-2.5 rounded-full bg-[#e3ecd5] text-[#193222] flex items-center justify-center space-x-1.5 transition';
+        tabGrowthBtn.className = 'flex-1 min-h-[44px] py-2.5 rounded-full text-[#3d5243] hover:text-[#193222] flex items-center justify-center space-x-1.5 transition';
+        viewRecords.classList.remove('hidden');
+        viewGrowth.classList.add('hidden');
+        headerMainTitle.textContent = '운동 기록';
+        headerSubTitle.textContent = '스마트싱스와 함께 쌓아온 운동 기록';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        tabGrowthBtn.className = 'flex-1 min-h-[44px] py-2.5 rounded-full bg-[#e3ecd5] text-[#193222] flex items-center justify-center space-x-1.5 transition';
+        tabRecordsBtn.className = 'flex-1 min-h-[44px] py-2.5 rounded-full text-[#3d5243] hover:text-[#193222] flex items-center justify-center space-x-1.5 transition';
+        viewGrowth.classList.remove('hidden');
+        viewRecords.classList.add('hidden');
+        headerMainTitle.textContent = '성장 리포트';
+        headerSubTitle.textContent = '기록이 쌓일수록 달라지는 나를 확인해봐.';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    document.getElementById('tabRecordsBtn').addEventListener('click', () => switchTab('records'));
+    document.getElementById('tabGrowthBtn').addEventListener('click', () => switchTab('growth'));
+
+    // 데이터 로드
+    async function loadData() {
+      const savedGoals = localStorage.getItem(STORAGE_KEY_GOALS);
+      if (savedGoals) {
+        try {
+          const parsed = JSON.parse(savedGoals);
+          // 이전 기본 문구('치팅데이 맛있는 치킨 먹기 🍗')를 새 카피('치팅데이: 치킨 먹기')로 자동 정리
+          if (parsed.monthReward && parsed.monthReward.includes('치팅데이 맛있는 치킨 먹기')) {
+            parsed.monthReward = '치팅데이: 치킨 먹기';
+          }
+          if (parsed.yearReward && parsed.yearReward.includes('제주도 힐링 여행')) {
+            parsed.yearReward = '제주도: 힐링 여행';
+          }
+          userGoals = { ...userGoals, ...parsed };
+        } catch (e) {}
+      }
+
+      const gasUrl = localStorage.getItem(STORAGE_KEY_GAS_URL);
+      if (gasUrl && gasUrl.trim() !== '') {
+        try {
+          showToast('구글 시트 동기화 중...');
+          const resp = await fetch(gasUrl);
+          const data = await resp.json();
+          if (data && data.status === 'success' && Array.isArray(data.records)) {
+            records = data.records;
+            localStorage.setItem(STORAGE_KEY_RECORDS, JSON.stringify(records));
+            showToast('동기화 완료!');
+            renderAll();
+            return;
+          }
+        } catch (e) {
+          console.warn('동기화 실패:', e);
+        }
+      }
+
+      const local = localStorage.getItem(STORAGE_KEY_RECORDS);
+      if (local) {
+        try {
+          records = JSON.parse(local);
+          // 데모 데이터의 이전 기본 메모("스마트싱스 인터벌 10R 완주!")가 남아있는 경우 깔끔하게 정돈
+          records.forEach(r => {
+            if (r.id === 'rec_1' && r.notes && r.notes.includes('스마트싱스 인터벌 10R 완주!')) {
+              r.notes = '심폐 지구력 상승, 호흡 안정적';
+            }
+          });
+        } catch {
+          records = DEMO_RECORDS;
+        }
+      } else {
+        records = DEMO_RECORDS;
+        localStorage.setItem(STORAGE_KEY_RECORDS, JSON.stringify(records));
+      }
+      renderAll();
+    }
+
+    function saveLocal() {
+      localStorage.setItem(STORAGE_KEY_RECORDS, JSON.stringify(records));
+      renderAll();
+    }
+
+    function renderAll() {
+      records.sort((a, b) => parseDate(b.date).getTime() - parseDate(a.date).getTime());
+      renderGoalCard();
+      renderGrowthView();
+      renderFeedView();
+      renderCalendar();
+    }
+
+    // ------------------------------------------------------------
+    // 1) 월간/연간 퀘스트 카드 렌더링 (페이스 계산 + 50%/75% 마일스톤)
+    // ------------------------------------------------------------
+    function renderGoalCard() {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+
+      const btnMonth = document.getElementById('btnGoalTabMonth');
+      const btnYear = document.getElementById('btnGoalTabYear');
+      const targetSubLabel = document.getElementById('goalTargetSubLabel');
+      const scopeLabel = document.getElementById('goalPeriodScopeLabel');
+      const currentPaceLabel = document.getElementById('goalCurrentPaceLabel');
+      const milestoneBadge = document.getElementById('goalMilestoneBadge');
+
+      let currentCount = 0;
+      let targetCount = 12;
+      let rewardText = '';
+      let daysElapsed = 1;
+      let daysRemaining = 1;
+
+      if (currentGoalType === 'month') {
+        btnMonth.className = 'min-h-[36px] px-2.5 py-1 rounded-lg bg-[#284f36] text-[#eef7e6] shadow-sm transition flex items-center space-x-1';
+        btnYear.className = 'min-h-[36px] px-2.5 py-1 rounded-lg text-[#c7dcc9] hover:text-white transition flex items-center space-x-1';
+        targetSubLabel.textContent = `${currentMonth + 1}월 퀘스트`;
+
+        currentCount = records.filter(r => {
+          if (!r.date) return false;
+          const d = parseDate(r.date);
+          return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
+        }).length;
+
+        targetCount = Number(userGoals.monthCount) || 12;
+        rewardText = userGoals.monthReward || '치팅데이: 치킨 먹기';
+
+        const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        daysElapsed = Math.max(1, now.getDate());
+        daysRemaining = Math.max(1, lastDayOfMonth - now.getDate() + 1);
+      } else {
+        btnYear.className = 'min-h-[36px] px-2.5 py-1 rounded-lg bg-[#284f36] text-[#eef7e6] shadow-sm transition flex items-center space-x-1';
+        btnMonth.className = 'min-h-[36px] px-2.5 py-1 rounded-lg text-[#c7dcc9] hover:text-white transition flex items-center space-x-1';
+        targetSubLabel.textContent = `${currentYear}년 퀘스트`;
+
+        currentCount = records.filter(r => {
+          if (!r.date) return false;
+          const d = parseDate(r.date);
+          return d.getFullYear() === currentYear;
+        }).length;
+
+        targetCount = Number(userGoals.yearCount) || 120;
+        rewardText = userGoals.yearReward || '제주도: 힐링 여행';
+
+        const startOfYear = new Date(currentYear, 0, 1);
+        const endOfYear = new Date(currentYear, 11, 31);
+        daysElapsed = Math.max(1, Math.floor((now - startOfYear) / 86400000) + 1);
+        daysRemaining = Math.max(1, Math.floor((endOfYear - now) / 86400000) + 1);
+      }
+
+      const percent = Math.min(100, Math.round((currentCount / targetCount) * 100));
+      const currentWeeklyPace = ((currentCount / daysElapsed) * 7).toFixed(1).replace(/\.0$/, '');
+
+      document.getElementById('goalCurrentCount').textContent = currentCount;
+      document.getElementById('goalTargetCount').textContent = targetCount;
+      document.getElementById('goalPercentText').textContent = `${percent}%`;
+      document.getElementById('goalProgressBar').style.width = `${percent}%`;
+      currentPaceLabel.textContent = `현재 주 ${currentWeeklyPace}회 페이스`;
+
+      // 마일스톤 상태 배지 (50%, 75%, 100%)
+      if (percent >= 100) {
+        milestoneBadge.textContent = '100% 완주 달성';
+        milestoneBadge.className = 'text-xs px-2 py-0.5 rounded-full bg-[#c7e5a8] text-[#112417] font-black';
+        scopeLabel.textContent = '모든 마일스톤 돌파!';
+      } else if (percent >= 75) {
+        milestoneBadge.textContent = '75% 돌파 · 막판 스퍼트';
+        milestoneBadge.className = 'text-xs px-2 py-0.5 rounded-full bg-[#356343] text-[#e2f5ce] font-bold';
+        scopeLabel.textContent = '이번 달 누적';
+      } else if (percent >= 50) {
+        milestoneBadge.textContent = '50% 반환점 통과';
+        milestoneBadge.className = 'text-xs px-2 py-0.5 rounded-full bg-[#2c5439] text-[#d5f0b8] font-bold';
+        scopeLabel.textContent = '다음 마일스톤 75%';
+      } else {
+        milestoneBadge.textContent = currentGoalType === 'month' ? '이번 달 누적' : '올해 누적';
+        milestoneBadge.className = 'text-xs px-2 py-0.5 rounded-full bg-[#24452f] text-[#d6e8d8] font-semibold';
+        scopeLabel.textContent = `반환점(${Math.ceil(targetCount * 0.5)}회)까지 ${Math.max(0, Math.ceil(targetCount * 0.5) - currentCount)}회`;
+      }
+
+      const remaining = targetCount - currentCount;
+      const remainingElem = document.getElementById('goalRemainingText');
+      const rewardContainer = document.getElementById('goalRewardContainer');
+      const rewardLabel = document.getElementById('goalRewardLabel');
+      const rewardElem = document.getElementById('goalRewardText');
+
+      rewardElem.textContent = rewardText;
+
+      if (remaining <= 0) {
+        remainingElem.innerHTML = `<span class="text-[#d2f0b4] font-black">퀘스트 100% 완주 성공!</span>`;
+        rewardContainer.className = 'p-3 rounded-2xl bg-[#1e4428] border-2 border-[#82b575] flex items-center space-x-2.5 reward-gold-glow';
+        rewardLabel.textContent = '퀘스트 달성! 획득한 보상';
+        rewardLabel.className = 'text-xs font-black text-[#d2f0b4] block';
+      } else {
+        // 남은 기간 대비 필요 주간 페이스 계산
+        const neededWeeklyRaw = (remaining / daysRemaining) * 7;
+        const neededWeekly = neededWeeklyRaw < 1 ? '1' : neededWeeklyRaw.toFixed(1).replace(/\.0$/, '');
+        remainingElem.textContent = `${remaining}회 남았어! 주 ${neededWeekly}회만 해도 달성이야`;
+        rewardContainer.className = 'p-3 rounded-2xl bg-[#102216] border border-[#2d5037] flex items-center space-x-2.5';
+        rewardLabel.textContent = '퀘스트 달성 보상';
+        rewardLabel.className = 'text-xs font-bold text-[#c7dcc9] block';
+      }
+    }
+
+    document.getElementById('btnGoalTabMonth').addEventListener('click', () => {
+      currentGoalType = 'month';
+      renderGoalCard();
+    });
+
+    document.getElementById('btnGoalTabYear').addEventListener('click', () => {
+      currentGoalType = 'year';
+      renderGoalCard();
+    });
+
+    // 퀘스트 달성 히스토리 모달
+    function openGoalHistoryModal() {
+      const list = document.getElementById('goalHistoryList');
+      list.innerHTML = '';
+
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+      const historyItems = [];
+
+      for (let i = 0; i < 6; i++) {
+        const d = new Date(currentYear, currentMonth - i, 1);
+        const y = d.getFullYear();
+        const m = d.getMonth();
+        const monthKey = `${y}년 ${m + 1}월`;
+
+        const count = records.filter(r => {
+          if (!r.date) return false;
+          const rd = parseDate(r.date);
+          return rd.getFullYear() === y && rd.getMonth() === m;
+        }).length;
+
+        const target = Number(userGoals.monthCount) || 12;
+        const isPassed = count >= target;
+        const isCurrent = i === 0;
+
+        historyItems.push({
+          title: monthKey,
+          isCurrent,
+          count,
+          target,
+          isPassed,
+          reward: userGoals.monthReward
+        });
+      }
+
+      list.innerHTML = historyItems.map(item => `
+        <div class="p-3.5 rounded-2xl border ${item.isPassed ? 'bg-[#eef5e7] border-[#b7d6a3]' : 'bg-[#fafbf9] border-[#e5ebe0]'} flex items-center justify-between">
+          <div>
+            <div class="flex items-center space-x-1.5">
+              <span class="text-xs font-black text-[#193222]">${item.title}</span>
+              ${item.isCurrent ? '<span class="text-xs px-2 py-0.5 rounded-full bg-[#193222] text-white font-bold">진행 중</span>' : ''}
+              ${item.isPassed ? '<span class="text-xs px-2 py-0.5 rounded-full bg-[#1b7a43] text-white font-bold">달성 완료</span>' : ''}
+            </div>
+            <p class="text-xs text-[#3d5243] mt-1 font-medium">
+              운동 <span class="font-bold text-[#193222]">${item.count}회</span> / 목표 ${item.target}회
+              ${item.isPassed ? `<span class="block text-xs text-[#1b7a43] font-bold mt-0.5">보상: ${escapeHtml(item.reward)}</span>` : ''}
+            </p>
+          </div>
+          <div class="text-right">
+            <span class="text-sm font-black ${item.isPassed ? 'text-[#1b7a43]' : 'text-[#3d5243]'}">
+              ${Math.round((item.count / item.target) * 100)}%
+            </span>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('goalHistoryModal').classList.remove('hidden');
+    }
+
+    document.getElementById('btnOpenGoalHistory').addEventListener('click', openGoalHistoryModal);
+    document.getElementById('btnCloseGoalHistoryModal').addEventListener('click', () => document.getElementById('goalHistoryModal').classList.add('hidden'));
+    document.getElementById('btnCloseGoalHistoryBtn').addEventListener('click', () => document.getElementById('goalHistoryModal').classList.add('hidden'));
+
+    // ------------------------------------------------------------
+    // 2) 기간 기준 통일 (1주 = 정확히 7일, 4주 = 정확히 28일)
+    // ------------------------------------------------------------
+    function getPeriodBounds(period) {
+      const end = new Date();
+      end.setHours(23, 59, 59, 999);
+
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+
+      if (period === '1w') {
+        // 오늘 포함 정확히 7일 (today - 6일 00:00 ~ today 23:59)
+        start.setDate(start.getDate() - 6);
+        const prevEnd = new Date(start.getTime() - 1);
+        const prevStart = new Date(start);
+        prevStart.setDate(prevStart.getDate() - 7);
+        return { start, end, prevStart, prevEnd, days: 7 };
+      }
+      if (period === '4w') {
+        // 오늘 포함 정확히 28일 (4주 = 28일: today - 27일 00:00 ~ today 23:59)
+        start.setDate(start.getDate() - 27);
+        const prevEnd = new Date(start.getTime() - 1);
+        const prevStart = new Date(start);
+        prevStart.setDate(prevStart.getDate() - 28);
+        return { start, end, prevStart, prevEnd, days: 28 };
+      }
+      // 전체 기간
+      if (records.length > 0) {
+        const oldest = parseDate(records[records.length - 1].date);
+        oldest.setHours(0, 0, 0, 0);
+        const diffDays = Math.max(1, Math.round((end - oldest) / 86400000));
+        return { start: oldest, end, prevStart: null, prevEnd: null, days: diffDays };
+      }
+      return { start, end, prevStart: null, prevEnd: null, days: 1 };
+    }
+
+    function getFilteredRecords(period) {
+      if (period === 'all') return [...records];
+      const { start, end } = getPeriodBounds(period);
+      return records.filter(r => {
+        const rd = parseDate(r.date);
+        return rd >= start && rd <= end;
+      });
+    }
+
+    function getPreviousRecords(period) {
+      if (period === 'all') return [];
+      const { prevStart, prevEnd } = getPeriodBounds(period);
+      if (!prevStart || !prevEnd) return [];
+      return records.filter(r => {
+        const rd = parseDate(r.date);
+        return rd >= prevStart && rd <= prevEnd;
+      });
+    }
+
+    function renderGrowthView() {
+      const bounds = getPeriodBounds(currentPeriod);
+      const curList = getFilteredRecords(currentPeriod);
+      const prevList = getPreviousRecords(currentPeriod);
+
+      // 상단 날짜 범위 표시 (M/D 포맷 통일 & 4주=28일 정확히 일치)
+      const daySpanText = currentPeriod === '1w' ? '7일' : (currentPeriod === '4w' ? '28일' : `${bounds.days}일`);
+      document.getElementById('growthPeriodRange').textContent = `${formatMD(bounds.start)} – ${formatMD(bounds.end)} (${daySpanText})`;
+      document.getElementById('growthPeriodCount').textContent = `총 ${curList.length}회 기록`;
+
+      // 첫 기록일로부터 경과 일수
+      let daysSinceFirst = 1;
+      if (records.length > 0) {
+        const firstDate = parseDate(records[records.length - 1].date);
+        firstDate.setHours(0, 0, 0, 0);
+        const todayEnd = new Date();
+        todayEnd.setHours(23, 59, 59, 999);
+        daysSinceFirst = Math.max(1, Math.ceil((todayEnd - firstDate) / 86400000));
+      }
+
+      // 1) 변화 하이라이트 배너 (기획 관점 1번: 이전 구간 기록이 3회 미만이면 착시 비교 대신 시작/주평균 메시지로 대체)
+      const curSec = curList.reduce((s, r) => s + (Number(r.durationSec) || 0), 0);
+      const prevSec = prevList.reduce((s, r) => s + (Number(r.durationSec) || 0), 0);
+      const curMin = Math.round(curSec / 60);
+      const prevMin = Math.round(prevSec / 60);
+      const diffMin = curMin - prevMin;
+      const weeklyAvg = ((curList.length / Math.max(7, bounds.days)) * 7).toFixed(1).replace(/\.0$/, '');
+
+      const bannerLabelElem = document.getElementById('growthBannerPeriodLabel');
+      const highlightElem = document.getElementById('growthHighlightText');
+      const compareSubElem = document.getElementById('growthCompareSub');
+
+      if (curList.length === 0) {
+        bannerLabelElem.textContent = '운동 시작하기';
+        highlightElem.textContent = '이 기간에는 아직 운동 기록이 없어.';
+        compareSubElem.textContent = '오늘 가볍게 첫 세션을 시작해볼까?';
+      } else if (currentPeriod === 'all') {
+        bannerLabelElem.textContent = `기록 시작 ${daysSinceFirst}일째`;
+        highlightElem.textContent = `지금까지 총 ${curMin}분, ${curList.length}회 운동을 쌓았어!`;
+        compareSubElem.textContent = `주 평균 ${weeklyAvg}회 페이스로 꾸준히 이어가는 중`;
+      } else if (prevList.length < 3) {
+        // 이전 구간 기록이 3회 미만이면 앱 초기/기록 시작 단계이므로 오해 없는 페이스 안내 제공
+        bannerLabelElem.textContent = `기록 시작 ${daysSinceFirst}일째`;
+        highlightElem.textContent = `주 평균 ${weeklyAvg}회 페이스로 기분 좋게 시작했어!`;
+        compareSubElem.textContent = `선택 기간 ${curList.length}회 완료 · 총 ${curMin}분 달성`;
+      } else {
+        bannerLabelElem.textContent = '이전 기간과 비교';
+        highlightElem.textContent = diffMin >= 0
+          ? `이전보다 ${diffMin}분 더 운동했어!`
+          : `이전보다 ${Math.abs(diffMin)}분 적게 운동했어.`;
+        compareSubElem.textContent = `${prevMin}분(${prevList.length}회) → ${curMin}분(${curList.length}회)`;
+      }
+
+      // 2) 4분할 성장 요약 카드 (시간 표기: 분 단위로 통일!)
+      document.getElementById('growthTotalDuration').textContent = `${curMin}분`;
+      document.getElementById('growthTotalCount').textContent = `${curList.length}회`;
+
+      const countDiff = curList.length - prevList.length;
+      if (currentPeriod === 'all' || prevList.length < 3) {
+        document.getElementById('growthCountCompare').textContent = `주 평균 ${weeklyAvg}회 페이스`;
+      } else {
+        document.getElementById('growthCountCompare').textContent = `이전 대비 ${countDiff >= 0 ? '+' : ''}${countDiff}회`;
+      }
+
+      const avgDurationMin = curList.length > 0 ? Math.round(curMin / curList.length) : 0;
+      document.getElementById('growthAvgDuration').textContent = `${avgDurationMin}분`;
+      const totalRounds = curList.reduce((s, r) => s + (Number(r.rounds) || 0), 0);
+      const avgRounds = curList.length > 0 ? (totalRounds / curList.length).toFixed(1).replace(/\.0$/, '') : '0';
+      document.getElementById('growthAvgRoundsSub').textContent = `회당 평균 ${avgRounds}라운드`;
+
+      const counts = {};
+      curList.forEach(r => { counts[r.type] = (counts[r.type] || 0) + 1; });
+      let fav = '기록 없음', maxC = 0;
+      for (const [k, v] of Object.entries(counts)) {
+        if (v > maxC) { maxC = v; fav = k; }
+      }
+      const ratio = curList.length > 0 ? Math.round((maxC / curList.length) * 100) : 0;
+      const favMeta = getCategoryMeta(fav);
+      document.getElementById('growthFavType').textContent = fav;
+      document.getElementById('growthFavRatio').textContent = `전체 운동의 ${ratio}%`;
+      const favIconElem = document.getElementById('growthFavIcon');
+      favIconElem.className = favMeta.textClass;
+      favIconElem.innerHTML = favMeta.svg;
+
+      // 3) 나의 최고 기록 (PB)
+      renderPersonalBests();
+
+      // 4) 시간 추이 라인 차트
+      renderLineChart(curList);
+
+      // 5) 빈도 바 차트 (28일 기준과 100% 정렬)
+      renderDynamicBarChart();
+
+      // 6) 종목 밸런스 바
+      renderBalanceBar(curList);
+    }
+
+    function getMonday(d) {
+      const date = new Date(d);
+      const day = date.getDay();
+      const diff = (day + 6) % 7;
+      date.setDate(date.getDate() - diff);
+      date.setHours(0, 0, 0, 0);
+      return date;
+    }
+
+    // 나의 최고 기록 (날짜 M/D 통일 + 주간 최다 타이 기록 문구 개선)
+    function renderPersonalBests() {
+      if (!records || records.length === 0) {
+        document.getElementById('growthPbDuration').textContent = '0분';
+        document.getElementById('growthPbDate').textContent = '-';
+        document.getElementById('growthPbRounds').textContent = '0R';
+        document.getElementById('growthPbRoundsDate').textContent = '-';
+        document.getElementById('growthPbWeeklyMax').textContent = '0회';
+        document.getElementById('growthPbWeeklyLabel').textContent = '-';
+        return;
+      }
+
+      let longest = records[0];
+      let maxRounds = records[0];
+
+      records.forEach(r => {
+        if ((Number(r.durationSec) || 0) > (Number(longest.durationSec) || 0)) longest = r;
+        if ((Number(r.rounds) || 0) > (Number(maxRounds.rounds) || 0)) maxRounds = r;
+      });
+
+      const longMin = Math.round((Number(longest.durationSec) || 0) / 60);
+      document.getElementById('growthPbDuration').textContent = `${longMin}분`;
+      document.getElementById('growthPbDate').textContent = `${longest.type} · ${formatMD(longest.date)}`;
+
+      document.getElementById('growthPbRounds').textContent = `${maxRounds.rounds || 0}R`;
+      document.getElementById('growthPbRoundsDate').textContent = `${maxRounds.type} · ${formatMD(maxRounds.date)}`;
+
+      // 주간 최다 횟수 및 이번 주 타이 여부 확인
+      const weekCounts = {};
+      const weekMondayMap = {};
+      records.forEach(r => {
+        if (!r.date) return;
+        const d = parseDate(r.date);
+        const monday = getMonday(d);
+        const key = `${monday.getFullYear()}-${monday.getMonth() + 1}-${monday.getDate()}`;
+        weekCounts[key] = (weekCounts[key] || 0) + 1;
+        weekMondayMap[key] = monday;
+      });
+
+      let maxWeekly = 0;
+      let bestWeekKey = '';
+      for (const [k, cnt] of Object.entries(weekCounts)) {
+        if (cnt > maxWeekly) {
+          maxWeekly = cnt;
+          bestWeekKey = k;
+        }
+      }
+
+      const thisMonday = getMonday(new Date());
+      const thisWeekKey = `${thisMonday.getFullYear()}-${thisMonday.getMonth() + 1}-${thisMonday.getDate()}`;
+      const thisWeekCount = weekCounts[thisWeekKey] || 0;
+
+      document.getElementById('growthPbWeeklyMax').textContent = `${maxWeekly}회`;
+      if (maxWeekly === 0) {
+        document.getElementById('growthPbWeeklyLabel').textContent = '-';
+      } else if (thisWeekCount === maxWeekly) {
+        document.getElementById('growthPbWeeklyLabel').textContent = '이번 주도 타이 기록';
+      } else if (bestWeekKey && weekMondayMap[bestWeekKey]) {
+        const bm = weekMondayMap[bestWeekKey];
+        document.getElementById('growthPbWeeklyLabel').textContent = `${bm.getMonth() + 1}/${bm.getDate()} 주간`;
+      } else {
+        document.getElementById('growthPbWeeklyLabel').textContent = '최고 기록';
+      }
+    }
+
+    // ------------------------------------------------------------
+    // 시간 추이 선 그래프 (실제 날짜 간격 비례 X축 + 평균선 + 첫/끝/최고점 값 + 시작/끝 날짜)
+    // ------------------------------------------------------------
+    function renderLineChart(curList) {
+      const chartList = [...curList].sort((a, b) => parseDate(a.date).getTime() - parseDate(b.date).getTime());
+      const svg = document.getElementById('svgGrowthChart');
+      svg.innerHTML = '';
+
+      // 카피 관점 4번: 카드 제목에서 "최근 4주" 반복 제거 -> "시간 추이"만 표시
+      document.getElementById('chartDurationTitle').textContent = '시간 추이';
+
+      if (chartList.length === 0) {
+        document.getElementById('growthChartAvgDuration').textContent = '기록 없음';
+        svg.innerHTML = `<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#3d5243" font-size="12" font-weight="600">해당 기간 운동 기록이 없어.</text>`;
+        return;
+      }
+
+      const durations = chartList.map(r => Math.round((Number(r.durationSec) || 0) / 60));
+      const avgDur = Math.round(durations.reduce((a, b) => a + b, 0) / durations.length);
+      document.getElementById('growthChartAvgDuration').textContent = `평균 ${avgDur}분`;
+
+      const maxVal = Math.max(...durations);
+      const minVal = Math.min(...durations);
+      const maxD = Math.max(maxVal + 4, 30);
+      const minD = Math.max(0, minVal - 5);
+
+      const w = 340, h = 126;
+      const padLeft = 18, padRight = 18, padTop = 22, padBottom = 24;
+      const plotW = w - padLeft - padRight;
+      const plotH = h - padTop - padBottom;
+
+      svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+
+      const getY = (val) => padTop + plotH - ((val - minD) / Math.max(1, maxD - minD)) * plotH;
+
+      // 시간 간격 비례 X좌표 계산 (불규칙한 세션 간격 왜곡 방지 + 겹침 최소 간격 보정)
+      const timestamps = chartList.map(r => parseDate(r.date).getTime());
+      const minT = timestamps[0];
+      const maxT = timestamps[timestamps.length - 1];
+      const timeSpan = maxT - minT;
+
+      const rawXs = timestamps.map((t, idx) => {
+        if (chartList.length === 1) return padLeft + plotW / 2;
+        if (timeSpan <= 0) return padLeft + (plotW / (chartList.length - 1)) * idx;
+        // 실제 날짜 비례 75% + 순서 균등 25% 블렌딩으로 시간 추세 왜곡을 막으면서 같은 날 기록 겹침도 방지
+        const timeRatio = (t - minT) / timeSpan;
+        const idxRatio = idx / (chartList.length - 1);
+        return padLeft + (timeRatio * 0.78 + idxRatio * 0.22) * plotW;
+      });
+
+      const points = durations.map((val, idx) => ({
+        x: rawXs[idx],
+        y: getY(val),
+        val,
+        item: chartList[idx],
+        idx
+      }));
+
+      // 최고점 인덱스 찾기 (가장 최근 최고점 우선)
+      let peakIdx = 0;
+      points.forEach((p, idx) => {
+        if (p.val >= points[peakIdx].val) peakIdx = idx;
+      });
+
+      // 평균선 그리기 (명확한 대비 + 라벨)
+      const avgY = getY(avgDur);
+      svg.innerHTML += `
+        <line x1="${padLeft - 6}" y1="${avgY}" x2="${w - padRight + 6}" y2="${avgY}" stroke="#6b9078" stroke-dasharray="4,3" stroke-width="1.5" />
+        <rect x="${w - padRight - 46}" y="${Math.max(2, avgY - 16)}" width="48" height="14" rx="4" fill="#e6eed9" />
+        <text x="${w - padRight - 22}" y="${Math.max(12, avgY - 6)}" text-anchor="middle" fill="#1e3b28" font-size="9.5" font-weight="700">평균 ${avgDur}분</text>
+      `;
+
+      // 영역 그라데이션 & 선 그리기
+      if (points.length > 1) {
+        const areaD = `M ${points[0].x} ${padTop + plotH} ` + points.map(p => `L ${p.x} ${p.y}`).join(' ') + ` L ${points[points.length - 1].x} ${padTop + plotH} Z`;
+        svg.innerHTML += `
+          <defs>
+            <linearGradient id="chartAreaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1b7a43" stop-opacity="0.18"/>
+              <stop offset="100%" stop-color="#1b7a43" stop-opacity="0.0"/>
+            </linearGradient>
+          </defs>
+          <path d="${areaD}" fill="url(#chartAreaGrad)" />
+        `;
+      }
+
+      const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+      svg.innerHTML += `<path d="${pathD}" fill="none" stroke="#1b7a43" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />`;
+
+      // 점 및 첫 점 / 마지막 점 / 최고점 값 라벨 표시
+      points.forEach((p, idx) => {
+        const isFirst = idx === 0;
+        const isLast = idx === points.length - 1;
+        const isPeak = idx === peakIdx;
+        const dateMD = formatMD(p.item.date);
+
+        const dotRadius = isPeak ? 5.5 : 4;
+        const dotFill = isPeak ? '#d97706' : '#1b7a43';
+
+        if (isPeak) {
+          svg.innerHTML += `<circle cx="${p.x}" cy="${p.y}" r="9" fill="#d97706" fill-opacity="0.2" />`;
+        }
+
+        svg.innerHTML += `
+          <circle cx="${p.x}" cy="${p.y}" r="${dotRadius}" fill="${dotFill}" stroke="#ffffff" stroke-width="2" class="cursor-pointer transition" onclick="showDotInfo('${dateMD}', '${p.val}분', '${escapeHtml(p.item.type)}')">
+            <title>${dateMD}: ${p.val}분</title>
+          </circle>
+        `;
+
+        // 첫 점, 마지막 점, 최고점 숫자 라벨
+        if (isPeak || isFirst || isLast) {
+          const labelText = isPeak && points.length > 2 ? `최고 ${p.val}분` : `${p.val}분`;
+          const labelColor = isPeak ? '#b45309' : '#193222';
+          const anchor = isFirst ? 'start' : (isLast ? 'end' : 'middle');
+          const offsetX = isFirst ? -4 : (isLast ? 4 : 0);
+          const labelY = Math.max(12, p.y - 9);
+          svg.innerHTML += `
+            <text x="${p.x + offsetX}" y="${labelY}" text-anchor="${anchor}" fill="${labelColor}" font-size="10.5" font-weight="800">${labelText}</text>
+          `;
+        }
+      });
+
+      // X축 시작일과 종료일 표시 (M/D 통일)
+      const firstDateStr = formatMD(chartList[0].date);
+      const lastDateStr = formatMD(chartList[chartList.length - 1].date);
+      svg.innerHTML += `
+        <line x1="${padLeft}" y1="${padTop + plotH}" x2="${w - padRight}" y2="${padTop + plotH}" stroke="#dce3d5" stroke-width="1" />
+        <text x="${padLeft}" y="${h - 4}" text-anchor="start" fill="#3d5243" font-size="10.5" font-weight="700">${firstDateStr}</text>
+        ${chartList.length > 1 ? `<text x="${w - padRight}" y="${h - 4}" text-anchor="end" fill="#3d5243" font-size="10.5" font-weight="700">${lastDateStr}</text>` : ''}
+      `;
+    }
+
+    // ------------------------------------------------------------
+    // 빈도 바 차트 (기간 기준 28일과 정확히 일치 + 제목에서 "최근 4주" 반복 제거)
+    // ------------------------------------------------------------
+    function renderDynamicBarChart() {
+      const container = document.getElementById('growthBarContainer');
+      const titleElem = document.getElementById('barFrequencyTitle');
+      const avgElem = document.getElementById('growthWeeklyAvgText');
+      container.innerHTML = '';
+
+      const now = new Date();
+
+      if (currentPeriod === '1w') {
+        titleElem.textContent = '요일별 빈도';
+        const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+        const dayBuckets = [];
+
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date(now);
+          d.setDate(d.getDate() - i);
+          d.setHours(0, 0, 0, 0);
+          const nextD = new Date(d);
+          nextD.setDate(d.getDate() + 1);
+
+          const count = records.filter(r => {
+            const rd = parseDate(r.date);
+            return rd >= d && rd < nextD;
+          }).length;
+
+          const isToday = i === 0;
+          dayBuckets.push({
+            label: isToday ? '오늘' : dayNames[d.getDay()],
+            count,
+            isCurrent: isToday
+          });
+        }
+
+        const totalC = dayBuckets.reduce((s, b) => s + b.count, 0);
+        avgElem.textContent = `7일간 총 ${totalC}회`;
+
+        const maxC = Math.max(...dayBuckets.map(b => b.count), 1);
+        container.innerHTML = dayBuckets.map(b => {
+          const heightPx = Math.max(6, Math.round((b.count / Math.max(maxC, 2)) * 48));
+          const color = b.count > 0 ? (b.isCurrent ? 'bg-[#193222]' : 'bg-[#2d6a4f]') : 'bg-[#dce3d5]';
+          return `
+            <div class="flex flex-col items-center space-y-1 flex-1">
+              <span class="text-xs font-bold ${b.count > 0 ? 'text-[#193222]' : 'text-[#3d5243]'}">${b.count}회</span>
+              <div class="w-5 rounded-md ${color} transition-all duration-500" style="height: ${heightPx}px;"></div>
+              <span class="text-xs ${b.isCurrent ? 'font-black text-[#193222]' : 'font-medium text-[#3d5243]'}">${b.label}</span>
+            </div>
+          `;
+        }).join('');
+
+      } else if (currentPeriod === '4w') {
+        // 기획 관점 4번: 상단 28일(today - 27일 ~ today) 기준과 정확히 일치하는 7일×4구간 주차별 빈도
+        titleElem.textContent = '주차별 빈도';
+
+        const endDay = new Date(now);
+        endDay.setHours(23, 59, 59, 999);
+
+        const weekBuckets = [];
+        const labels = ['3주 전', '2주 전', '지난주', '이번 주'];
+
+        for (let i = 3; i >= 0; i--) {
+          const bEnd = new Date(endDay.getTime() - i * 7 * 86400000);
+          const bStart = new Date(bEnd);
+          bStart.setDate(bStart.getDate() - 6);
+          bStart.setHours(0, 0, 0, 0);
+
+          const count = records.filter(r => {
+            const rd = parseDate(r.date);
+            return rd >= bStart && rd <= bEnd;
+          }).length;
+
+          weekBuckets.push({
+            label: labels[3 - i],
+            rangeLabel: `${bStart.getMonth() + 1}/${bStart.getDate()}`,
+            count,
+            isCurrent: i === 0
+          });
+        }
+
+        const totalC = weekBuckets.reduce((s, b) => s + b.count, 0);
+        avgElem.textContent = `주 평균 ${(totalC / 4).toFixed(1).replace(/\.0$/, '')}회`;
+
+        const maxC = Math.max(...weekBuckets.map(b => b.count), 1);
+        container.innerHTML = weekBuckets.map(b => {
+          const heightPx = Math.max(8, Math.round((b.count / Math.max(maxC, 4)) * 48));
+          const color = b.isCurrent ? 'bg-[#193222]' : 'bg-[#2d6a4f]';
+          return `
+            <div class="flex flex-col items-center space-y-1 flex-1">
+              <span class="text-xs font-bold ${b.isCurrent ? 'text-[#193222]' : 'text-[#3d5243]'}">${b.count}회</span>
+              <div class="w-8 rounded-lg ${color} transition-all duration-500" style="height: ${heightPx}px;"></div>
+              <span class="text-xs ${b.isCurrent ? 'font-black text-[#193222]' : 'font-medium text-[#3d5243]'}">${b.label}</span>
+            </div>
+          `;
+        }).join('');
+
+      } else {
+        titleElem.textContent = '월별 빈도';
+        const monthBuckets = [];
+        const curY = now.getFullYear();
+        const curM = now.getMonth();
+
+        for (let i = 4; i >= 0; i--) {
+          const d = new Date(curY, curM - i, 1);
+          const y = d.getFullYear();
+          const m = d.getMonth();
+          const nextM = new Date(y, m + 1, 1);
+
+          const count = records.filter(r => {
+            const rd = parseDate(r.date);
+            return rd >= d && rd < nextM;
+          }).length;
+
+          monthBuckets.push({
+            label: `${m + 1}월`,
+            count,
+            isCurrent: i === 0
+          });
+        }
+
+        const totalC = monthBuckets.reduce((s, b) => s + b.count, 0);
+        avgElem.textContent = `월 평균 ${(totalC / 5).toFixed(1).replace(/\.0$/, '')}회`;
+
+        const maxC = Math.max(...monthBuckets.map(b => b.count), 1);
+        container.innerHTML = monthBuckets.map(b => {
+          const heightPx = Math.max(8, Math.round((b.count / Math.max(maxC, 6)) * 48));
+          const color = b.isCurrent ? 'bg-[#193222]' : 'bg-[#2d6a4f]';
+          return `
+            <div class="flex flex-col items-center space-y-1 flex-1">
+              <span class="text-xs font-bold ${b.isCurrent ? 'text-[#193222]' : 'text-[#3d5243]'}">${b.count}회</span>
+              <div class="w-7 rounded-lg ${color} transition-all duration-500" style="height: ${heightPx}px;"></div>
+              <span class="text-xs ${b.isCurrent ? 'font-black text-[#193222]' : 'font-medium text-[#3d5243]'}">${b.label}</span>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    // ------------------------------------------------------------
+    // 종목 밸런스 바 (고대비 종목 색상 통일 + 세그먼트 내부 횟수 표시)
+    // ------------------------------------------------------------
+    function renderBalanceBar(list) {
+      const counts = { '런닝': 0, '실내 자전거': 0, '맨몸운동': 0, '기타': 0 };
+      list.forEach(r => {
+        const meta = getCategoryMeta(r.type);
+        counts[meta.key] = (counts[meta.key] || 0) + 1;
+      });
+
+      const total = list.length;
+      document.getElementById('balanceSectionTitle').textContent = '종목 밸런스';
+      document.getElementById('growthBalanceSub').textContent = `총 ${total}회 기록`;
+
+      const bar = document.getElementById('balanceProgressBar');
+      const legend = document.getElementById('balanceLegend');
+
+      if (total === 0) {
+        bar.innerHTML = `<div class="w-full h-full bg-[#dce3d5] flex items-center justify-center text-xs text-[#3d5243]">기록 없음</div>`;
+        legend.innerHTML = '';
+        return;
+      }
+
+      const items = [
+        { label: '런닝', count: counts['런닝'], colorClass: 'bg-[#1b7a43]', dotClass: 'bg-[#1b7a43]' },
+        { label: '자전거', count: counts['실내 자전거'], colorClass: 'bg-[#2563eb]', dotClass: 'bg-[#2563eb]' },
+        { label: '맨몸운동', count: counts['맨몸운동'], colorClass: 'bg-[#d97706]', dotClass: 'bg-[#d97706]' },
+        { label: '기타', count: counts['기타'], colorClass: 'bg-[#64748b]', dotClass: 'bg-[#64748b]' }
+      ].filter(it => it.count > 0);
+
+      bar.innerHTML = items.map(it => {
+        const pct = Math.round((it.count / total) * 100);
+        return `
+          <div style="width: ${pct}%" class="${it.colorClass} h-full flex items-center justify-center transition-all duration-500 overflow-hidden px-1">
+            ${pct >= 14 ? `<span>${it.count}회</span>` : ''}
+          </div>
+        `;
+      }).join('');
+
+      legend.innerHTML = items.map(it => {
+        const pct = Math.round((it.count / total) * 100);
+        return `
+          <span class="flex items-center space-x-1.5">
+            <span class="w-2.5 h-2.5 rounded-full ${it.dotClass}"></span>
+            <span>${it.label} ${it.count}회 (${pct}%)</span>
+          </span>
+        `;
+      }).join('');
+    }
+
+    // ------------------------------------------------------------
+    // 격일 운동 패턴에 맞춘 주간 연속 루틴(주 3회+) 및 징검다리 스트릭 계산
+    // ------------------------------------------------------------
+    function calculateWorkoutStreak() {
+      if (!records || records.length === 0) {
+        return { label: '연속 루틴', value: '0주 연속' };
+      }
+
+      // 주별 운동 횟수 집계
+      const weekCounts = {};
+      records.forEach(r => {
+        if (!r.date) return;
+        const m = getMonday(parseDate(r.date));
+        const key = `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}-${String(m.getDate()).padStart(2, '0')}`;
+        weekCounts[key] = (weekCounts[key] || 0) + 1;
+      });
+
+      const thisMonday = getMonday(new Date());
+      let consecutiveWeeks = 0;
+      let checkMon = new Date(thisMonday);
+
+      // 이번 주에 이미 2~3회 이상 달성했으면 이번 주부터 카운트, 아직 주 초반이라 미달이면 지난주부터 연속 주 확인
+      const thisKey = `${checkMon.getFullYear()}-${String(checkMon.getMonth() + 1).padStart(2, '0')}-${String(checkMon.getDate()).padStart(2, '0')}`;
+      if ((weekCounts[thisKey] || 0) >= 2) {
+        consecutiveWeeks++;
+      }
+      checkMon.setDate(checkMon.getDate() - 7);
+
+      while (true) {
+        const k = `${checkMon.getFullYear()}-${String(checkMon.getMonth() + 1).padStart(2, '0')}-${String(checkMon.getDate()).padStart(2, '0')}`;
+        if ((weekCounts[k] || 0) >= 2) {
+          consecutiveWeeks++;
+          checkMon.setDate(checkMon.getDate() - 7);
+        } else {
+          break;
+        }
+      }
+
+      if (consecutiveWeeks > 0) {
+        return { label: '주간 루틴', value: `${consecutiveWeeks}주 연속` };
+      }
+
+      // 주간 연속이 아직 없을 때는 휴식일 1~2일 허용 루틴 일수 계산 (오늘 운동 전이어도 어제/그제 운동했으면 유지)
+      return { label: '이번 주 루틴', value: `${weekCounts[thisKey] || 0}회 달성` };
+    }
+
+    // ------------------------------------------------------------
+    // 운동 기록 탭 렌더링 (월별 그룹핑 헤더 + 56px 달력 타일 + 중복 시간 제거 + 정확한 더보기)
+    // ------------------------------------------------------------
+    function renderFeedView() {
+      const now = new Date();
+      now.setHours(23, 59, 59, 999);
+
+      // 이번 주 기록 계산 (월요일 기준, 분 단위 통일)
+      const thisMonday = getMonday(now);
+      const weeklyRecords = records.filter(r => parseDate(r.date) >= thisMonday);
+      const totalWeeklySec = weeklyRecords.reduce((s, r) => s + (Number(r.durationSec) || 0), 0);
+      const weeklyMin = Math.round(totalWeeklySec / 60);
+
+      document.getElementById('feedWeeklyDuration').textContent = `${weeklyMin}분`;
+      document.getElementById('feedWeeklyCount').textContent = `${weeklyRecords.length}회`;
+
+      const streakInfo = calculateWorkoutStreak();
+      document.getElementById('feedStreakLabel').textContent = streakInfo.label;
+      document.getElementById('feedStreakCount').textContent = streakInfo.value;
+
+      // 필터 적용 (캘린더 날짜 필터 + 종목 필터)
+      let filtered = [...records];
+      filtered.sort((a, b) => parseDate(b.date).getTime() - parseDate(a.date).getTime());
+
+      if (selectedCalendarDate) {
+        filtered = filtered.filter(r => {
+          if (!r.date) return false;
+          const d = parseDate(r.date);
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          return `${y}-${m}-${day}` === selectedCalendarDate;
+        });
+      }
+
+      if (currentFilter !== 'all') {
+        filtered = filtered.filter(r => {
+          const meta = getCategoryMeta(r.type);
+          return meta.key === currentFilter;
+        });
+      }
+
+      // 카피 관점 10번: "지난 기록 12개" (날짜 선택 시 "10/10 기록 1개")
+      const headingElem = document.getElementById('feedListHeading');
+      if (selectedCalendarDate) {
+        const parts = selectedCalendarDate.split('-');
+        headingElem.textContent = `${Number(parts[1])}/${Number(parts[2])} 기록 ${filtered.length}개`;
+      } else {
+        headingElem.textContent = `지난 기록 ${filtered.length}개`;
+      }
+
+      const container = document.getElementById('feedRecordList');
+      const loadMoreContainer = document.getElementById('feedLoadMoreContainer');
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<p class="text-xs text-[#3d5243] py-10 text-center font-semibold">조건에 맞는 운동 기록이 없어.</p>';
+        loadMoreContainer.classList.add('hidden');
+        return;
+      }
+
+      // 월별 소계(횟수, 총 분) 미리 집계 (기획 관점 5번: "10월 · 5회 · 130분")
+      const monthSummaryMap = {};
+      filtered.forEach(item => {
+        const d = parseDate(item.date);
+        const ymKey = `${d.getFullYear()}-${d.getMonth() + 1}`;
+        if (!monthSummaryMap[ymKey]) {
+          monthSummaryMap[ymKey] = {
+            year: d.getFullYear(),
+            month: d.getMonth() + 1,
+            count: 0,
+            totalMin: 0
+          };
+        }
+        monthSummaryMap[ymKey].count += 1;
+        monthSummaryMap[ymKey].totalMin += Math.round((Number(item.durationSec) || 0) / 60);
+      });
+
+      const visibleItems = filtered.slice(0, feedVisibleLimit);
+      const dayShortNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+      const currentYear = new Date().getFullYear();
+
+      let lastYmKey = null;
+      let htmlParts = [];
+
+      visibleItems.forEach((item) => {
+        const d = parseDate(item.date);
+        const ymKey = `${d.getFullYear()}-${d.getMonth() + 1}`;
+
+        // 월이 바뀔 때마다 월 구분 헤더와 소계 삽입
+        if (ymKey !== lastYmKey && !selectedCalendarDate) {
+          lastYmKey = ymKey;
+          const mSum = monthSummaryMap[ymKey];
+          const monthLabel = mSum.year === currentYear ? `${mSum.month}월` : `${mSum.year}년 ${mSum.month}월`;
+          htmlParts.push(`
+            <div class="px-4 py-2 bg-[#f4f6f0] flex items-center justify-between text-xs font-bold text-[#2d4534]">
+              <span>${monthLabel}</span>
+              <span>${mSum.count}회 · ${mSum.totalMin}분</span>
+            </div>
+          `);
+        }
+
+        const dayStr = dayShortNames[d.getDay()] || '';
+        const dateStr = formatMD(d);
+        const durMin = `${Math.round((Number(item.durationSec) || 0) / 60)}분`;
+        const meta = getCategoryMeta(item.type);
+        const roundsText = `${item.rounds || 0}R`;
+
+        // 디자인 관점 1 & 2번:
+        // - 좌측 56px(w-14) 고정 너비 달력 타일: 작은 요일 아래 큰 날짜 숫자 배치 -> 제목 시작 위치 100% 정렬
+        // - 종목 아이콘 + 종목명 + 스마트싱스/수동 배지
+        // - 가운데 보조줄에서 중복 시간("30분")을 제거하고 "10R · 메모"만 깔끔하게 표시
+        htmlParts.push(`
+          <div class="px-4 py-3.5 flex items-center justify-between cursor-pointer hover:bg-[#fafbf9] transition" onclick="openEditModal('${item.id}')">
+            <div class="flex items-center space-x-3 min-w-0 flex-1 pr-2">
+              <!-- 고정 너비 56px (w-14) 달력 타일 -->
+              <div class="w-14 h-12 rounded-xl bg-[#f4f6f0] border border-[#dce3d5] flex flex-col items-center justify-center flex-shrink-0">
+                <span class="text-xs font-semibold text-[#3d5243] leading-none">${dayStr}</span>
+                <span class="text-sm font-black text-[#193222] leading-tight mt-1">${dateStr}</span>
+              </div>
+
+              <!-- 제목 열 (모든 행에서 동일한 X좌표에서 시작) -->
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center space-x-1.5">
+                  <span class="${meta.textClass} flex-shrink-0">${meta.svg}</span>
+                  <span class="text-sm font-extrabold text-[#193222] truncate">${escapeHtml(item.type)}</span>
+                  <span class="text-xs px-2 py-0.5 rounded-md font-bold flex-shrink-0 ${item.source === 'SmartThings' ? 'bg-[#e3f0d8] text-[#193222]' : 'bg-[#eef0ea] text-[#3d5243]'}">
+                    ${item.source === 'SmartThings' ? '스마트싱스' : '수동'}
+                  </span>
+                </div>
+                <div class="text-xs text-[#3d5243] mt-1 flex items-center space-x-1.5 font-medium truncate">
+                  <span class="font-bold text-[#193222] flex-shrink-0">${roundsText}</span>
+                  ${item.notes ? `<span>·</span><span class="text-[#3d5243] truncate">${escapeHtml(item.notes)}</span>` : ''}
+                </div>
+              </div>
+            </div>
+
+            <!-- 우측 굵은 운동 시간 + 쉐브론 -->
+            <div class="flex items-center space-x-1.5 text-right flex-shrink-0">
+              <span class="text-base font-black text-[#193222]">${durMin}</span>
+              <svg class="w-4 h-4 text-[#3d5243]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </div>
+          </div>
+        `);
+      });
+
+      container.innerHTML = htmlParts.join('');
+
+      // 카피 관점 11번: 남은 개수 정확히 계산하여 "2개 더 보기 (10/12)"로 표시
+      const remainingCount = filtered.length - visibleItems.length;
+      if (remainingCount > 0) {
+        const nextBatch = Math.min(10, remainingCount);
+        loadMoreContainer.classList.remove('hidden');
+        document.getElementById('feedLoadMoreText').textContent = `${nextBatch}개 더 보기 (${visibleItems.length}/${filtered.length})`;
+      } else {
+        loadMoreContainer.classList.add('hidden');
+      }
+    }
+
+    document.getElementById('btnFeedLoadMore').addEventListener('click', () => {
+      feedVisibleLimit += 10;
+      renderFeedView();
+    });
+
+    // ------------------------------------------------------------
+    // 캘린더 렌더링 (기본: 주간 7일 스트립 / 펼치기: 월 전체 보기 + 오늘/선택 구분 + 종목 색 도트)
+    // ------------------------------------------------------------
+    function renderCalendar() {
+      const year = calYear;
+      const month = calMonth;
+
+      // 해당 월 전체 운동일 수 계산
+      const monthWorkoutSet = new Set();
+      const dateWorkoutsMap = {}; // 'YYYY-MM-DD' -> [record, ...]
+
+      records.forEach(r => {
+        if (!r.date) return;
+        const d = parseDate(r.date);
+        const y = d.getFullYear();
+        const m = d.getMonth();
+        const day = d.getDate();
+        const key = `${y}-${String(m + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        if (!dateWorkoutsMap[key]) dateWorkoutsMap[key] = [];
+        dateWorkoutsMap[key].push(r);
+        if (y === year && m === month) {
+          monthWorkoutSet.add(day);
+        }
+      });
+
+      document.getElementById('calCurrentMonthTitle').textContent = `${year}년 ${month + 1}월`;
+      document.getElementById('calMonthWorkoutCount').textContent = `${monthWorkoutSet.size}일 운동`;
+
+      const expandBtnText = document.getElementById('calExpandBtnText');
+      const expandIcon = document.getElementById('calExpandIcon');
+      if (isCalendarExpanded) {
+        expandBtnText.textContent = '주간 접기';
+        expandIcon.classList.add('rotate-180');
+      } else {
+        expandBtnText.textContent = '월 전체 보기';
+        expandIcon.classList.remove('rotate-180');
+      }
+
+      const grid = document.getElementById('calDaysGrid');
+      grid.innerHTML = '';
+
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+      function buildDayCellHtml(cellDate, isOtherMonth = false) {
+        const y = cellDate.getFullYear();
+        const m = cellDate.getMonth();
+        const d = cellDate.getDate();
+        const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const dayRecords = dateWorkoutsMap[dateStr] || [];
+        const isToday = dateStr === todayStr;
+        const isSelected = selectedCalendarDate === dateStr;
+
+        // 디자인 관점 개선 권장 3번:
+        // - 선택된 날(isSelected): 진한 채움 배경(bg-[#193222] text-white)
+        // - 오늘(isToday, 선택 안 됨): 채움이나 박스 테두리 없이 굵은 초록 숫자 + 밑줄로 명확히 구분
+        let btnStyle = 'hover:bg-[#f0f3ec] text-[#193222]';
+        let numStyle = 'text-xs font-semibold';
+        if (isOtherMonth) {
+          btnStyle = 'opacity-40 hover:bg-[#f0f3ec] text-[#3d5243]';
+        }
+        if (isSelected) {
+          btnStyle = 'bg-[#193222] text-white shadow-sm';
+          numStyle = 'text-xs font-black text-white';
+        } else if (isToday) {
+          btnStyle = 'hover:bg-[#eef4e4] text-[#1b7a43]';
+          numStyle = 'text-xs font-black text-[#1b7a43] underline decoration-2 underline-offset-2';
+        }
+
+        // 종목 색상이 입혀진 도트 (최대 3개 표시)
+        let dotsHtml = '';
+        if (dayRecords.length > 0) {
+          const dots = dayRecords.slice(0, 3).map(r => {
+            if (isSelected) return `<span class="w-1.5 h-1.5 rounded-full bg-white"></span>`;
+            const meta = getCategoryMeta(r.type);
+            return `<span class="w-1.5 h-1.5 rounded-full ${meta.bgClass}"></span>`;
+          }).join('');
+          dotsHtml = `<div class="flex items-center justify-center space-x-0.5 mt-1 h-1.5">${dots}</div>`;
+        } else {
+          dotsHtml = `<div class="mt-1 h-1.5"></div>`;
+        }
+
+        return `
+          <button type="button" class="h-11 rounded-xl flex flex-col items-center justify-center relative transition ${btnStyle}" onclick="selectCalendarDate('${dateStr}')">
+            <span class="${numStyle} leading-none">${d}</span>
+            ${dotsHtml}
+          </button>
+        `;
+      }
+
+      if (!isCalendarExpanded) {
+        // 기본 상태: 주 단위(일~토 7일) 스트립으로 컴팩트하게 표시
+        const ref = new Date(calWeekRefDate);
+        const sunday = new Date(ref);
+        sunday.setDate(ref.getDate() - ref.getDay());
+        sunday.setHours(0, 0, 0, 0);
+
+        let html = '';
+        for (let i = 0; i < 7; i++) {
+          const cd = new Date(sunday);
+          cd.setDate(sunday.getDate() + i);
+          html += buildDayCellHtml(cd, cd.getMonth() !== month);
+        }
+        grid.innerHTML = html;
+      } else {
+        // 펼침 상태: 월 전체 그리드 표시
+        const firstDayIndex = new Date(year, month, 1).getDay();
+        const lastDate = new Date(year, month + 1, 0).getDate();
+
+        let html = '';
+        for (let i = 0; i < firstDayIndex; i++) {
+          html += `<div class="h-11"></div>`;
+        }
+        for (let d = 1; d <= lastDate; d++) {
+          const cd = new Date(year, month, d);
+          html += buildDayCellHtml(cd, false);
+        }
+        grid.innerHTML = html;
+      }
+
+      const filterNotice = document.getElementById('calFilterNotice');
+      const helperHint = document.getElementById('calHelperHint');
+      if (selectedCalendarDate) {
+        const parts = selectedCalendarDate.split('-');
+        const mdStr = `${Number(parts[1])}/${Number(parts[2])}`;
+        filterNotice.classList.remove('hidden');
+        document.getElementById('calFilterText').textContent = `${mdStr} 기록만 보는 중`;
+        helperHint.textContent = '선택한 날짜를 다시 누르면 해제돼';
+      } else {
+        filterNotice.classList.add('hidden');
+        helperHint.textContent = '날짜를 누르면 그날만 필터돼';
+      }
+    }
+
+    function selectCalendarDate(dateStr) {
+      if (selectedCalendarDate === dateStr) {
+        selectedCalendarDate = null;
+      } else {
+        selectedCalendarDate = dateStr;
+        const d = parseDate(dateStr);
+        calYear = d.getFullYear();
+        calMonth = d.getMonth();
+        calWeekRefDate = d;
+      }
+      feedVisibleLimit = 10;
+      renderCalendar();
+      renderFeedView();
+    }
+
+    document.getElementById('btnClearDateFilter').addEventListener('click', () => {
+      selectedCalendarDate = null;
+      feedVisibleLimit = 10;
+      renderCalendar();
+      renderFeedView();
+    });
+
+    document.getElementById('btnToggleCalExpand').addEventListener('click', () => {
+      isCalendarExpanded = !isCalendarExpanded;
+      renderCalendar();
+    });
+
+    document.getElementById('btnCalPrev').addEventListener('click', () => {
+      if (isCalendarExpanded) {
+        calMonth--;
+        if (calMonth < 0) { calMonth = 11; calYear--; }
+        calWeekRefDate = new Date(calYear, calMonth, 1);
+      } else {
+        calWeekRefDate.setDate(calWeekRefDate.getDate() - 7);
+        calYear = calWeekRefDate.getFullYear();
+        calMonth = calWeekRefDate.getMonth();
+      }
+      renderCalendar();
+    });
+
+    document.getElementById('btnCalNext').addEventListener('click', () => {
+      if (isCalendarExpanded) {
+        calMonth++;
+        if (calMonth > 11) { calMonth = 0; calYear++; }
+        calWeekRefDate = new Date(calYear, calMonth, 1);
+      } else {
+        calWeekRefDate.setDate(calWeekRefDate.getDate() + 7);
+        calYear = calWeekRefDate.getFullYear();
+        calMonth = calWeekRefDate.getMonth();
+      }
+      renderCalendar();
+    });
+
+    document.getElementById('btnCalToday').addEventListener('click', () => {
+      const now = new Date();
+      calYear = now.getFullYear();
+      calMonth = now.getMonth();
+      calWeekRefDate = new Date(now);
+      selectedCalendarDate = null;
+      feedVisibleLimit = 10;
+      renderCalendar();
+      renderFeedView();
+    });
+
+    // 나의 최고 기록 상세 패널 토글 (쉐브론 회전 연동)
+    document.getElementById('btnTogglePb').addEventListener('click', () => {
+      const panel = document.getElementById('pbDetailPanel');
+      const chevron = document.getElementById('pbToggleChevron');
+      isPbOpen = !isPbOpen;
+
+      if (isPbOpen) {
+        panel.classList.remove('hidden');
+        chevron.classList.add('rotate-180');
+      } else {
+        panel.classList.add('hidden');
+        chevron.classList.remove('rotate-180');
+      }
+    });
+
+    function showDotInfo(dateMD, duration, type) {
+      showToast(`${dateMD} · ${type} (${duration})`);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+    }
+
+    // ------------------------------------------------------------
+    // 모달 및 조작 인터랙션
+    // ------------------------------------------------------------
+    const recordModal = document.getElementById('recordModal');
+    const menuModal = document.getElementById('menuModal');
+    const goalModal = document.getElementById('goalModal');
+
+    // 필터 칩 클릭
+    document.querySelectorAll('.filter-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentFilter = btn.dataset.filter;
+        feedVisibleLimit = 10;
+        document.querySelectorAll('.filter-chip').forEach(b => {
+          b.className = 'filter-chip min-h-[38px] px-3.5 py-1.5 rounded-full bg-white text-[#2d4534] border border-[#dce3d5] hover:bg-[#fafbf9] transition flex items-center space-x-1.5 flex-shrink-0';
+        });
+        btn.className = 'filter-chip min-h-[38px] px-3.5 py-1.5 rounded-full bg-[#193222] text-white transition shadow-2xs flex items-center space-x-1.5 flex-shrink-0';
+        renderFeedView();
+      });
+    });
+
+    // 기간 필터 버튼 (1w, 4w, all)
+    document.querySelectorAll('.period-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentPeriod = btn.dataset.period;
+        document.querySelectorAll('.period-btn').forEach(b => {
+          b.classList.remove('bg-white', 'text-[#193222]', 'shadow-sm');
+          b.classList.add('text-[#3d5243]');
+        });
+        btn.classList.add('bg-white', 'text-[#193222]', 'shadow-sm');
+        btn.classList.remove('text-[#3d5243]');
+        renderGrowthView();
+      });
+    });
+
+    // 퀘스트 편집 모달
+    document.getElementById('btnOpenGoalModal').addEventListener('click', () => {
+      document.getElementById('inputMonthGoalCount').value = userGoals.monthCount || 12;
+      document.getElementById('inputMonthGoalReward').value = userGoals.monthReward || '';
+      document.getElementById('inputYearGoalCount').value = userGoals.yearCount || 120;
+      document.getElementById('inputYearGoalReward').value = userGoals.yearReward || '';
+      goalModal.classList.remove('hidden');
+    });
+    document.getElementById('btnCloseGoalModal').addEventListener('click', () => goalModal.classList.add('hidden'));
+    document.getElementById('btnCancelGoal').addEventListener('click', () => goalModal.classList.add('hidden'));
+
+    document.getElementById('goalForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      userGoals.monthCount = Number(document.getElementById('inputMonthGoalCount').value) || 12;
+      userGoals.monthReward = document.getElementById('inputMonthGoalReward').value.trim() || '치팅데이: 치킨 먹기';
+      userGoals.yearCount = Number(document.getElementById('inputYearGoalCount').value) || 120;
+      userGoals.yearReward = document.getElementById('inputYearGoalReward').value.trim() || '제주도: 힐링 여행';
+
+      localStorage.setItem(STORAGE_KEY_GOALS, JSON.stringify(userGoals));
+      goalModal.classList.add('hidden');
+      renderGoalCard();
+      showToast('퀘스트와 보상이 저장되었어!');
+    });
+
+    // 기록 추가/수정 모달
+    function openAddModal() {
+      document.getElementById('modalTitle').textContent = '새 운동 기록 추가';
+      document.getElementById('editRecordId').value = '';
+      selectType('런닝');
+      document.getElementById('customTypeInput').value = '';
+      document.getElementById('inputDurationMin').value = '25';
+      document.getElementById('inputRounds').value = '8';
+      document.getElementById('inputNotes').value = '';
+
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      document.getElementById('inputDateTime').value = now.toISOString().slice(0, 16);
+
+      document.getElementById('btnDeleteRecord').classList.add('hidden');
+      recordModal.classList.remove('hidden');
+    }
+
+    function openEditModal(id) {
+      const item = records.find(r => r.id === id);
+      if (!item) return;
+
+      document.getElementById('modalTitle').textContent = '운동 기록 수정';
+      document.getElementById('editRecordId').value = item.id;
+
+      const standards = ['런닝', '실내 자전거', '맨몸운동'];
+      if (standards.includes(item.type)) {
+        selectType(item.type);
+        document.getElementById('customTypeInput').value = '';
+      } else {
+        selectType('');
+        document.getElementById('customTypeInput').value = item.type;
+      }
+
+      document.getElementById('inputDurationMin').value = Math.max(1, Math.round((item.durationSec || 0) / 60));
+      document.getElementById('inputRounds').value = item.rounds || 1;
+      document.getElementById('inputNotes').value = item.notes || '';
+
+      if (item.date) {
+        const d = parseDate(item.date);
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        document.getElementById('inputDateTime').value = d.toISOString().slice(0, 16);
+      }
+
+      document.getElementById('btnDeleteRecord').classList.remove('hidden');
+      recordModal.classList.remove('hidden');
+    }
+
+    function selectType(type) {
+      selectedType = type;
+      document.querySelectorAll('.type-btn').forEach(btn => {
+        if (btn.dataset.type === type) {
+          btn.classList.add('bg-[#eef4e4]', 'text-[#193222]', 'border-[#cfe0ba]');
+          btn.classList.remove('bg-white', 'text-[#3d5243]', 'border-[#dce3d5]');
+        } else {
+          btn.classList.remove('bg-[#eef4e4]', 'text-[#193222]', 'border-[#cfe0ba]');
+          btn.classList.add('bg-white', 'text-[#3d5243]', 'border-[#dce3d5]');
+        }
+      });
+    }
+
+    document.getElementById('btnAddRecordMain').addEventListener('click', openAddModal);
+    document.getElementById('btnCloseRecordModal').addEventListener('click', () => recordModal.classList.add('hidden'));
+
+    document.querySelectorAll('.type-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectType(btn.dataset.type);
+        document.getElementById('customTypeInput').value = '';
+      });
+    });
+
+    // 폼 저장
+    document.getElementById('recordForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = document.getElementById('editRecordId').value;
+      const customType = document.getElementById('customTypeInput').value.trim();
+      const finalType = customType || selectedType || '운동';
+      const durationMin = Number(document.getElementById('inputDurationMin').value) || 1;
+      const durationSec = durationMin * 60;
+      const durationText = `${durationMin}분`;
+      const rounds = Number(document.getElementById('inputRounds').value) || 1;
+      const notes = document.getElementById('inputNotes').value.trim();
+      const rawDate = document.getElementById('inputDateTime').value;
+      const dateStr = rawDate ? rawDate.replace('T', ' ') + ':00' : getFormattedDate(0, new Date().getHours(), new Date().getMinutes());
+
+      const gasUrl = localStorage.getItem(STORAGE_KEY_GAS_URL);
+
+      if (!id) {
+        const newRecord = {
+          id: 'rec_' + Date.now(),
+          date: dateStr,
+          type: finalType,
+          durationSec: durationSec,
+          durationText: durationText,
+          rounds: rounds,
+          notes: notes,
+          source: '수동'
+        };
+        records.unshift(newRecord);
+        saveLocal();
+        showToast('새 운동 기록을 추가했어!');
+        if (gasUrl) {
+          fetch(gasUrl, { method: 'POST', body: JSON.stringify({ action: 'add', ...newRecord }) }).catch(console.error);
+        }
+      } else {
+        const item = records.find(r => r.id === id);
+        if (item) {
+          item.type = finalType;
+          item.durationSec = durationSec;
+          item.durationText = durationText;
+          item.rounds = rounds;
+          item.notes = notes;
+          item.date = dateStr;
+          saveLocal();
+          showToast('운동 기록을 수정했어.');
+          if (gasUrl) {
+            fetch(gasUrl, { method: 'POST', body: JSON.stringify({ action: 'update', id: item.id, type: finalType, notes: notes }) }).catch(console.error);
+          }
+        }
+      }
+
+      recordModal.classList.add('hidden');
+    });
+
+    // 삭제
+    document.getElementById('btnDeleteRecord').addEventListener('click', () => {
+      const id = document.getElementById('editRecordId').value;
+      if (!id || !confirm('이 운동 기록을 삭제할까?')) return;
+      records = records.filter(r => r.id !== id);
+      saveLocal();
+      showToast('기록을 삭제했어.');
+      const gasUrl = localStorage.getItem(STORAGE_KEY_GAS_URL);
+      if (gasUrl) {
+        fetch(gasUrl, { method: 'POST', body: JSON.stringify({ action: 'delete', id: id }) }).catch(console.error);
+      }
+      recordModal.classList.add('hidden');
+    });
+
+    // 구글 시트 연동 & 설정 모달
+    document.getElementById('btnOpenMenu').addEventListener('click', () => {
+      document.getElementById('settingGasUrl').value = localStorage.getItem(STORAGE_KEY_GAS_URL) || '';
+      document.getElementById('connectionStatus').textContent = 'URL 입력 후 연결 테스트를 눌러봐.';
+      menuModal.classList.remove('hidden');
+    });
+    document.getElementById('btnCloseMenuModal').addEventListener('click', () => menuModal.classList.add('hidden'));
+
+    document.getElementById('btnModalSyncNow').addEventListener('click', () => {
+      loadData();
+      menuModal.classList.add('hidden');
+    });
+
+    document.getElementById('btnSaveSettings').addEventListener('click', () => {
+      const url = document.getElementById('settingGasUrl').value.trim();
+      localStorage.setItem(STORAGE_KEY_GAS_URL, url);
+      menuModal.classList.add('hidden');
+      showToast('설정을 저장했어!');
+      loadData();
+    });
+
+    document.getElementById('btnTestConnection').addEventListener('click', async () => {
+      const url = document.getElementById('settingGasUrl').value.trim();
+      const status = document.getElementById('connectionStatus');
+      if (!url) {
+        status.innerHTML = '<span class="text-amber-700 font-bold">URL이 비어 있어.</span>';
+        return;
+      }
+      status.innerHTML = '<span class="text-blue-700 font-bold">연결 확인 중...</span>';
+      try {
+        const resp = await fetch(url);
+        const data = await resp.json();
+        if (data && data.status === 'success') {
+          status.innerHTML = `<span class="text-[#1b7a43] font-bold">연결 성공! (${data.records ? data.records.length : 0}개 수신)</span>`;
+        } else {
+          status.innerHTML = '<span class="text-rose-700 font-bold">응답 오류</span>';
+        }
+      } catch (e) {
+        status.innerHTML = `<span class="text-rose-700 font-bold">연결 실패 (${e.message})</span>`;
+      }
+    });
+
+    document.getElementById('btnResetDemo').addEventListener('click', () => {
+      if (confirm('샘플 데모 데이터로 복원할까?')) {
+        records = [...DEMO_RECORDS];
+        userGoals = {
+          monthCount: 12,
+          monthReward: '치팅데이: 치킨 먹기',
+          yearCount: 120,
+          yearReward: '제주도: 힐링 여행'
+        };
+        localStorage.setItem(STORAGE_KEY_GOALS, JSON.stringify(userGoals));
+        saveLocal();
+        menuModal.classList.add('hidden');
+        showToast('샘플 데이터가 복원되었어.');
+      }
+    });
+
+    // 초기 실행
+    loadData();
+  </script>
+</body>
+</html>
