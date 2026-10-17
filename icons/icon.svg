@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Dark Obsidian Squircle Background -->
+  <rect width="256" height="256" rx="58" fill="#202022"/>
+  
+  <!-- 3x3 Dot Matrix Grid: 'H' Shape Pattern -->
+  <!-- Row 1 (y=73): White, Dim Gray, White -->
+  <circle cx="73" cy="73" r="17" fill="#FFFFFF"/>
+  <circle cx="128" cy="73" r="17" fill="#646362"/>
+  <circle cx="183" cy="73" r="17" fill="#FFFFFF"/>
+  
+  <!-- Row 2 (y=128): White, White, White -->
+  <circle cx="73" cy="128" r="17" fill="#FFFFFF"/>
+  <circle cx="128" cy="128" r="17" fill="#FFFFFF"/>
+  <circle cx="183" cy="128" r="17" fill="#FFFFFF"/>
+  
+  <!-- Row 3 (y=183): White, Dim Gray, White -->
+  <circle cx="73" cy="183" r="17" fill="#FFFFFF"/>
+  <circle cx="128" cy="183" r="17" fill="#646362"/>
+  <circle cx="183" cy="183" r="17" fill="#FFFFFF"/>
+</svg>
