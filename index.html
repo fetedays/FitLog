@@ -1,0 +1,3293 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>나의 운동 이야기 - 스마트싱스 운동 기록</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Pretendard Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- PWA Meta & Icons -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="theme-color" content="#F4F4F6">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <style>
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      background-color: #F4F4F6;
+      color: #111113;
+      padding-bottom: calc(7.5rem + env(safe-area-inset-bottom, 0px));
+      font-variant-numeric: tabular-nums;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    @keyframes pulse-crimson {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.4); }
+      50% { transform: scale(1.01); box-shadow: 0 0 16px 3px rgba(225, 29, 72, 0.35); }
+    }
+    .reward-gold-glow {
+      animation: pulse-crimson 2.5s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-[#18181B] selection:text-white">
+
+  <!-- ============================================================ -->
+  <!-- 메인 뷰 컨테이너 (모바일 및 태블릿 반응형 대응) -->
+  <!-- ============================================================ -->
+  <div class="w-full max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto px-4 md:px-6 lg:px-8 pt-4 md:pt-6 pb-24 md:pb-28 relative">
+
+    <!-- 1. 상단 헤더 (오늘 날짜 + 타이틀 + 구글시트/백업 설정 버튼) -->
+    <header class="flex items-center justify-between pt-1 pb-2">
+      <div>
+        <span class="text-xs md:text-sm font-bold text-[#71717A] tracking-tight block" id="headerDateLabel">10월 17일 토요일 · 어제보다 한 걸음</span>
+        <h1 class="text-2xl md:text-3xl font-black text-[#111113] tracking-tight mt-0.5" id="headerTitle">나의 성장 스토리</h1>
+        <p class="text-xs md:text-sm font-semibold text-[#71717A] mt-0.5" id="headerSubCopy">작은 운동이 모여 만드는 나만의 변화</p>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button id="btnInstallPwa" type="button" class="hidden items-center space-x-1.5 px-3 py-2 rounded-full bg-[#18181B] text-white text-xs font-bold shadow-sm hover:bg-black active:scale-95 transition flex-shrink-0" title="앱으로 설치하기">
+          <svg class="w-3.5 h-3.5 text-[#E11D48]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+          </svg>
+          <span class="inline">앱 설치</span>
+        </button>
+        <button id="btnOpenSheetModal" type="button" class="w-11 h-11 md:w-12 md:h-12 rounded-full bg-white border border-black/[0.06] shadow-sm flex items-center justify-center text-[#18181B] hover:bg-[#F8F8FA] active:scale-95 transition relative flex-shrink-0" title="구글 시트 연동 및 데이터 백업/복구">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+          <span id="syncDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white absolute top-1 right-1"></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 2. 상단 세그먼트 캡슐 스위치 ([나의 성장] / [운동 기록] - 44px 터치 영역 확보) -->
+    <nav class="my-3 md:my-4 p-1 rounded-full bg-[#E4E4E7]/70 backdrop-blur-sm grid grid-cols-2 gap-1 text-xs font-bold max-w-md mx-auto" aria-label="메인 탭 네비게이션">
+      <button id="topTabGrowthBtn" type="button" class="py-3 min-h-[44px] rounded-full bg-[#18181B] text-white shadow-sm flex items-center justify-center space-x-1.5 transition active:scale-95">
+        <svg class="w-3.5 h-3.5 text-[#E11D48]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+        </svg>
+        <span>나의 성장</span>
+      </button>
+      <button id="topTabRecordsBtn" type="button" class="py-3 min-h-[44px] rounded-full text-[#71717A] hover:text-[#18181B] flex items-center justify-center space-x-1.5 transition active:scale-95">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+        </svg>
+        <span>운동 기록</span>
+      </button>
+    </nav>
+
+    <!-- ========================================================== -->
+    <!-- [VIEW A] '나의 성장' 탭 (목표, 습관, 장기 변화, 종목 밸런스) -->
+    <!-- ========================================================== -->
+    <main id="viewGrowth" class="space-y-4">
+
+      <!-- 3-1. 상단 요약 (이번 주 누적 시간, 이번 주 횟수, 현재 연속 일수) -->
+      <section class="grid grid-cols-3 gap-2 md:gap-3" aria-label="이번 주 요약 통계">
+        <!-- 1) 이번 주 운동 시간 -->
+        <div class="bg-white rounded-2xl p-3 md:p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-black/[0.04] flex flex-col justify-between">
+          <div class="flex items-center space-x-1 text-[#E11D48]">
+            <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span class="text-xs font-bold text-[#71717A]">이번 주 시간</span>
+          </div>
+          <div class="mt-1.5">
+            <span class="text-base md:text-lg font-black text-[#111113] tracking-tight block leading-tight truncate" id="statActiveTime">0분</span>
+            <span class="text-xs font-semibold text-[#71717A] mt-0.5 block">이번 주 누적</span>
+          </div>
+        </div>
+
+        <!-- 2) 이번 주 운동 횟수 -->
+        <div class="bg-white rounded-2xl p-3 md:p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-black/[0.04] flex flex-col justify-between">
+          <div class="flex items-center space-x-1 text-[#E11D48]">
+            <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+            <span class="text-xs font-bold text-[#71717A]">이번 주 횟수</span>
+          </div>
+          <div class="mt-1.5">
+            <span class="text-base md:text-lg font-black text-[#111113] tracking-tight block leading-tight truncate" id="statWorkouts">0회</span>
+            <span class="text-xs font-semibold text-[#71717A] mt-0.5 block">이번 주 완료</span>
+          </div>
+        </div>
+
+        <!-- 3) 현재 연속 운동 일수 -->
+        <div class="bg-white rounded-2xl p-3 md:p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-black/[0.04] flex flex-col justify-between">
+          <div class="flex items-center space-x-1 text-[#E11D48]">
+            <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12.984 2C12.56 2.015 12.164 2.227 11.93 2.58C9.53 6.18 8.01 9.49 8.01 12.5C8.01 14.86 8.89 16.92 10.35 18.31C9.64 17.5 9.09 16.38 9.09 15C9.09 13.06 10.02 11.64 11.23 10.35C11.64 9.91 12.11 9.47 12.55 8.95C13.88 7.37 15.02 5.35 14.93 3.19C14.9 2.54 14.39 2.02 13.74 2.01C13.48 2 13.23 2 12.984 2ZM15.93 9.42C15.11 10.63 14.16 11.83 14.16 13.5C14.16 14.74 14.67 15.79 15.44 16.59C14.47 15.82 13.85 14.65 13.85 13.34C13.85 11.85 14.66 10.68 15.93 9.42ZM14.99 15.2C15 17.85 13.66 20 12 20C10.34 20 9 17.85 9 15.2C9 14.54 9.17 13.91 9.46 13.35C9.75 14.6 10.63 15.65 12 16.03C12.01 16.03 12.03 16.03 12.04 16.03C13.59 16.03 14.89 14.86 14.99 13.31C14.99 13.94 14.99 14.57 14.99 15.2Z"/>
+            </svg>
+            <span class="text-xs font-bold text-[#71717A]">연속 일수</span>
+          </div>
+          <div class="mt-1.5">
+            <span class="text-base md:text-lg font-black text-[#111113] tracking-tight block leading-tight truncate" id="statStreak">0일</span>
+            <span class="text-xs font-semibold text-[#71717A] mt-0.5 block">현재 연속 기록</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 태블릿/PC 반응형 2열 분할 그리드 (모바일: 1열 세로 스택, 태블릿/PC: 좌우 2분할 벤토 그리드) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start">
+        
+        <!-- 좌측 컬럼 (5열): 주간 체크인, 월간·연간 목표 카드 -->
+        <div class="lg:col-span-5 space-y-4">
+          <!-- 3-2. 주간 체크인 (7일 요일 캡슐 - 터치 시 해당 날짜 운동 기록으로 이동) -->
+          <section class="bg-white rounded-3xl p-4 shadow-[0_2px_16px_rgba(0,0,0,0.03)] border border-black/[0.04] space-y-2.5">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-1.5">
+                <span class="w-2 h-2 rounded-full bg-[#E11D48]"></span>
+                <h2 class="text-xs font-black text-[#111113] tracking-tight">주간 체크인 (요일별 완료)</h2>
+              </div>
+              <span class="text-xs font-bold text-[#E11D48]" id="weeklyCheckinCount">이번 주 0일 완료</span>
+            </div>
+            <!-- 7일 요일 캡슐 그리드 -->
+            <div class="grid grid-cols-7 gap-1.5" id="weeklyCheckinGrid">
+              <!-- JS로 동적 렌더링 -->
+            </div>
+          </section>
+
+          <!-- 3-3. 월간·연간 목표 카드 (목표 달성률, 남은 횟수, 보상) -->
+          <section class="p-5 rounded-3xl bg-[#18181B] text-white shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-white/10 space-y-4">
+        
+        <!-- 상단 헤더: 월간 목표 / 연간 목표 세그먼트 탭 & 우측 설정 버튼 -->
+        <div class="flex items-center justify-between border-b border-white/10 pb-3 gap-2">
+          <div class="flex items-center p-1 rounded-xl bg-[#27272A] border border-white/10 text-xs font-bold">
+            <button id="btnGoalTabMonth" type="button" class="px-3 py-1.5 rounded-lg bg-white text-[#18181B] shadow-sm whitespace-nowrap transition flex items-center space-x-1.5">
+              <svg class="w-3.5 h-3.5 flex-shrink-0 text-[#E11D48]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              <span>월간 목표</span>
+            </button>
+            <button id="btnGoalTabYear" type="button" class="px-3 py-1.5 rounded-lg text-[#A1A1AA] hover:text-white whitespace-nowrap transition flex items-center space-x-1.5">
+              <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+              </svg>
+              <span>연간 목표</span>
+            </button>
+          </div>
+
+          <!-- 우측 목표 설정 버튼 -->
+          <button id="btnOpenGoalModal" type="button" class="min-h-[36px] px-3 py-1.5 rounded-xl bg-[#27272A] hover:bg-[#3F3F46] border border-white/10 text-[#F4F4F6] text-xs font-bold whitespace-nowrap transition flex items-center space-x-1.5 flex-shrink-0" title="목표 설정">
+            <svg class="w-3.5 h-3.5 flex-shrink-0 text-[#E11D48]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+            </svg>
+            <span>목표 설정</span>
+          </button>
+        </div>
+
+        <!-- 목표 진행 게이지 바 영역 -->
+        <div id="goalProgressTrigger" class="space-y-2 cursor-pointer rounded-2xl p-1 -m-1 hover:bg-white/5 active:scale-[0.99] transition" title="눌러서 지난 목표 달성 히스토리 보기">
+          <div class="flex justify-between items-baseline">
+            <div>
+              <span class="text-xs text-[#A1A1AA] font-bold block" id="goalTargetSubLabel">10월 운동 목표</span>
+              <span class="font-black text-white text-3xl tracking-tight mt-0.5 block">
+                <span id="goalCurrentCount">0</span> <span class="text-xs text-[#D4D4D8] font-semibold">/ <span id="goalTargetCount">12</span>회 달성</span>
+              </span>
+            </div>
+            <div class="text-right">
+              <span class="font-black text-3xl text-[#E11D48]" id="goalPercentText">0%</span>
+            </div>
+          </div>
+
+          <!-- 전월/작년 대비 횟수 및 시간 비교 뱃지 라인 -->
+          <div class="flex items-center flex-wrap gap-1.5 pt-0.5" id="goalCompareRow">
+            <span id="goalCompareCountBadge" class="text-xs px-2.5 py-1 rounded-full font-bold bg-[#27272A] text-[#FDA4AF] border border-white/10 inline-flex items-center space-x-1">
+              <span id="goalCompareCountText">지난달 대비 계산 중</span>
+            </span>
+            <span id="goalCompareDurationBadge" class="text-xs px-2.5 py-1 rounded-full font-semibold bg-[#27272A]/70 text-[#E4E4E7] border border-white/10 inline-flex items-center space-x-1">
+              <span id="goalTotalDurationText">총 0분</span>
+            </span>
+          </div>
+
+          <!-- 크림슨 레드 프로그레스 바 -->
+          <div class="w-full h-3 bg-[#27272A] rounded-full overflow-hidden p-0.5 border border-white/10">
+            <div id="goalProgressBar" class="h-full bg-gradient-to-r from-[#BE123C] via-[#E11D48] to-[#FB7185] rounded-full transition-all duration-700 shadow-sm" style="width: 0%"></div>
+          </div>
+
+          <div class="flex justify-between items-center text-xs text-[#D4D4D8] font-semibold pt-1">
+            <span id="goalRemainingText" class="text-[#FFE4E6] font-bold">앞으로 12회 더 운동하면 달성!</span>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-white/10 hover:bg-white/15 border border-white/15 text-xs font-bold text-white transition" id="goalPeriodScopeLabel">달성 히스토리 보기 ▸</span>
+          </div>
+        </div>
+
+        <!-- 달성 시 보상 (Reward) 박스 -->
+        <div id="goalRewardContainer" class="p-3 rounded-2xl bg-[#27272A]/80 border border-white/10 flex items-center space-x-2.5 transition">
+          <div class="w-8 h-8 rounded-xl bg-[#18181B] text-[#E11D48] flex items-center justify-center shadow-sm flex-shrink-0" id="goalRewardIcon">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <span class="text-xs font-bold text-[#A1A1AA] block" id="goalRewardLabel">목표 달성 시 보상</span>
+            <p class="text-xs font-extrabold text-white truncate mt-0.5" id="goalRewardText">치팅데이 맛있는 치킨 먹기</p>
+          </div>
+        </div>
+
+      </section>
+
+        </div>
+
+        <!-- 우측 컬럼 (7열): 최근 기간 변화, 성장 기록 통합, 종목별 비율 -->
+        <div class="lg:col-span-7 space-y-4">
+
+          <!-- 3-4. 최근 기간 변화 카드 (이전 동일 기간 대비 성장 분석) -->
+          <section class="p-4 rounded-3xl bg-white border border-black/[0.04] shadow-[0_2px_16px_rgba(0,0,0,0.03)] space-y-3">
+            <!-- 기간 선택 스위치 (터치 영역 확보) -->
+            <div class="grid grid-cols-3 p-1 rounded-full bg-[#E4E4E7]/70 backdrop-blur-sm text-xs font-bold text-[#71717A]">
+              <button data-period="1w" type="button" class="period-btn py-2 min-h-[38px] rounded-full transition active:scale-95">최근 1주</button>
+              <button data-period="4w" type="button" class="period-btn py-2 min-h-[38px] rounded-full bg-white text-[#111113] shadow-sm font-black transition active:scale-95">최근 4주</button>
+              <button data-period="all" type="button" class="period-btn py-2 min-h-[38px] rounded-full transition active:scale-95">전체</button>
+            </div>
+
+            <div class="flex items-center space-x-2 pt-1">
+              <div class="w-6 h-6 rounded-lg bg-[#FFF1F2] flex items-center justify-center text-[#E11D48] flex-shrink-0">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                </svg>
+              </div>
+              <span class="text-xs font-extrabold text-[#BE123C]" id="growthBannerPeriodLabel">최근 4주의 변화</span>
+            </div>
+
+            <h2 class="text-xl font-black text-[#111113] tracking-tight leading-snug" id="growthHighlightText">
+              운동 기록을 분석하고 있어.
+            </h2>
+            <p class="text-xs text-[#71717A] font-bold" id="growthCompareSub">
+              이전 대비 데이터 계산 중
+            </p>
+
+            <!-- 이전 대비 세부 횟수 및 시간 비교 2열 그리드 -->
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-[#F4F4F6]" id="growthCompareStats">
+              <div class="p-2.5 rounded-2xl bg-[#F8F8FA] border border-black/[0.03] flex items-center justify-between">
+                <div>
+                  <span class="text-xs font-bold text-[#71717A] block">운동 횟수 추세</span>
+                  <span class="text-sm font-black text-[#111113]" id="compareCountDetail">0회 → 0회</span>
+                </div>
+                <span class="text-xs font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800" id="compareCountDiffBadge">+0회</span>
+              </div>
+              <div class="p-2.5 rounded-2xl bg-[#F8F8FA] border border-black/[0.03] flex items-center justify-between">
+                <div>
+                  <span class="text-xs font-bold text-[#71717A] block">운동 시간 추세</span>
+                  <span class="text-sm font-black text-[#111113]" id="compareDurationDetail">0분 → 0분</span>
+                </div>
+                <span class="text-xs font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800" id="compareDurationDiffBadge">+0분</span>
+              </div>
+            </div>
+          </section>
+
+      <!-- 3-5. 성장 기록 통합 카드 (4분할 지표 + 라인 차트 + 빈도 바 차트) -->
+      <section class="p-4 rounded-3xl bg-white border border-black/[0.04] shadow-[0_2px_16px_rgba(0,0,0,0.03)] space-y-4">
+        
+        <!-- 섹션 헤더 -->
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-[#71717A] block">시간 · 횟수 · 습관</span>
+            <h3 class="text-lg font-black text-[#111113] tracking-tight mt-0.5" id="recordSectionTitle">성장 레코드</h3>
+          </div>
+          <span class="text-xs px-2.5 py-1 rounded-full bg-[#F4F4F6] text-[#111113] font-black" id="recordPeriodBadge">최근 4주 기준</span>
+        </div>
+
+        <!-- 4분할 지표 그리드 -->
+        <div class="grid grid-cols-2 gap-2.5 pt-0.5">
+          <!-- 1. 총 운동 시간 카드 -->
+          <div class="p-3.5 rounded-2xl bg-[#F8F8FA] border border-black/[0.03]">
+            <div class="flex items-center justify-between text-[#71717A]">
+              <span class="text-xs font-bold">총 운동 시간</span>
+              <svg class="w-4 h-4 text-[#E11D48]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <div class="text-xl font-black text-[#111113] mt-1.5 tracking-tight" id="growthTotalDuration">0분</div>
+            <p class="text-xs text-[#71717A] mt-1 font-semibold truncate" id="growthDurationCompare">이전 대비 0분</p>
+          </div>
+
+          <!-- 2. 총 운동 횟수 카드 -->
+          <div class="p-3.5 rounded-2xl bg-[#F8F8FA] border border-black/[0.03]">
+            <div class="flex items-center justify-between text-[#71717A]">
+              <span class="text-xs font-bold">총 운동 횟수</span>
+              <svg class="w-4 h-4 text-[#E11D48]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+            </div>
+            <div class="text-xl font-black text-[#111113] mt-1.5 tracking-tight" id="growthTotalCount">0<span class="text-xs font-bold text-[#71717A] ml-0.5">회</span></div>
+            <p class="text-xs text-[#71717A] mt-1 font-semibold" id="growthCountCompare">이전 대비</p>
+          </div>
+
+          <!-- 3. 회당 평균 시간 카드 -->
+          <div class="p-3.5 rounded-2xl bg-[#F8F8FA] border border-black/[0.03]">
+            <div class="flex items-center justify-between text-[#71717A]">
+              <span class="text-xs font-bold">회당 평균 시간</span>
+              <svg class="w-4 h-4 text-[#E11D48]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+            </div>
+            <div class="text-xl font-black text-[#111113] mt-1.5 tracking-tight" id="growthAvgDuration">0<span class="text-xs font-bold text-[#71717A] ml-0.5">분</span></div>
+            <p class="text-xs text-[#71717A] mt-1 font-semibold" id="growthAvgRoundsSub">회당 평균</p>
+          </div>
+
+          <!-- 4. 최애 종목 카드 -->
+          <div class="p-3.5 rounded-2xl bg-[#F8F8FA] border border-black/[0.03]">
+            <div class="flex items-center justify-between text-[#71717A]">
+              <span class="text-xs font-bold">최애 종목</span>
+              <span class="text-[#E11D48]" id="growthFavIcon">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+              </span>
+            </div>
+            <div class="text-lg font-black text-[#111113] mt-1.5 tracking-tight truncate" id="growthFavType">-</div>
+            <p class="text-xs text-[#71717A] mt-1 font-semibold truncate" id="growthFavRatio">0% 차지</p>
+          </div>
+        </div>
+
+        <!-- 운동 시간 추이 라인 차트 -->
+        <div class="space-y-1.5 pt-2 border-t border-[#F4F4F6]">
+          <div class="flex justify-between items-center text-xs font-bold text-[#111113]">
+            <div class="flex items-center space-x-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#E11D48]"></span>
+              <span id="chartDurationTitle">시간 추이</span>
+              <span class="text-xs text-[#71717A] font-semibold">(분)</span>
+            </div>
+            <span class="text-xs font-bold text-[#71717A]" id="growthChartAvgDuration">평균 0분</span>
+          </div>
+          <div class="w-full h-36 bg-[#F8F8FA] rounded-2xl p-2.5 border border-black/[0.03] relative flex items-center justify-center">
+            <svg id="svgGrowthChart" class="w-full h-full overflow-visible"></svg>
+          </div>
+        </div>
+
+        <!-- 운동 빈도 바 차트 -->
+        <div class="space-y-1.5 pt-2 border-t border-[#F4F4F6]">
+          <div class="flex justify-between items-center text-xs font-bold text-[#111113]">
+            <div class="flex items-center space-x-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#18181B]"></span>
+              <span id="barFrequencyTitle">운동 빈도</span>
+              <span class="text-xs text-[#71717A] font-semibold" id="barFrequencyUnit">(주차별)</span>
+            </div>
+            <span class="text-xs font-bold text-[#71717A]" id="growthWeeklyAvgText">주 평균 0회</span>
+          </div>
+          <div class="w-full h-32 bg-[#F8F8FA] rounded-2xl p-3 pt-5 border border-black/[0.03] flex items-end justify-between px-3" id="growthBarContainer">
+          </div>
+        </div>
+
+      </section>
+
+      <!-- 종목별 운동 비율 (종목 밸런스) -->
+      <section class="p-4 rounded-3xl bg-white border border-black/[0.04] shadow-[0_2px_16px_rgba(0,0,0,0.03)] space-y-2.5">
+        <div class="flex items-center justify-between text-xs">
+          <span class="font-extrabold text-[#111113]" id="balanceSectionTitle">종목별 운동 비율</span>
+          <span class="text-xs font-semibold text-[#71717A]" id="growthBalanceSub">총 0회 기록 분석</span>
+        </div>
+        
+        <!-- 동적 종목 밸런스 프로그레스 바 -->
+        <div class="w-full h-3 bg-[#F4F4F6] rounded-full overflow-hidden flex" id="balanceProgressBar">
+        </div>
+
+        <!-- 동적 종목 범례 -->
+        <div class="flex items-center flex-wrap gap-x-3 gap-y-1 text-xs font-semibold text-[#71717A] pt-1" id="balanceLegend">
+        </div>
+      </section>
+
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ========================================================== -->
+    <!-- [VIEW B] '운동 기록' 탭 (활동 분석 볼륨, 캘린더, 필터, 기록 관리) -->
+    <!-- ========================================================== -->
+    <main id="viewRecords" class="hidden space-y-4">
+      
+      <!-- 4-1. [운동 기록 상단] 활동 분석 대시보드 (일간/주간/월간 활동량 게이지 & 볼륨 차트) -->
+      <section class="bg-white rounded-3xl p-4 shadow-[0_2px_16px_rgba(0,0,0,0.03)] border border-black/[0.04] space-y-4">
+        
+        <!-- 상단 헤더: 타이틀 & 일단위/주단위/월단위 스위치 -->
+        <div class="flex items-center justify-between border-b border-[#F4F4F6] pb-3">
+          <div class="flex items-center space-x-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#E11D48]"></span>
+            <h2 class="text-sm font-black text-[#111113] tracking-tight">운동 활동 분석</h2>
+          </div>
+
+          <!-- 일단위, 주단위, 월단위 세그먼트 스위치 -->
+          <div class="flex items-center p-0.5 rounded-full bg-[#F4F4F6] text-xs font-bold border border-black/[0.04]" id="feedUnitSwitch">
+            <button type="button" data-feed-unit="daily" class="feed-unit-btn px-2.5 py-1 rounded-full bg-[#18181B] text-white shadow-sm transition">일간</button>
+            <button type="button" data-feed-unit="weekly" class="feed-unit-btn px-2.5 py-1 rounded-full text-[#71717A] hover:text-[#111113] transition">주간</button>
+            <button type="button" data-feed-unit="monthly" class="feed-unit-btn px-2.5 py-1 rounded-full text-[#71717A] hover:text-[#111113] transition">월간</button>
+          </div>
+        </div>
+
+        <!-- 메인 통합 활동 현황 카드 (첨부 이미지 디자인: 중앙 대형 링 + 컴팩트 3대 지표 + 하단 1줄 보조 정보) -->
+        <div class="p-4 sm:p-5 pt-3.5 pb-3 rounded-3xl bg-[#F8F8FA] border border-black/[0.04] shadow-[0_1px_4px_rgba(0,0,0,0.02)] space-y-2.5">
+          
+          <!-- 카드 상단 헤더: 활동 현황 타이틀 & 기간 안내 텍스트 -->
+          <div class="flex items-center justify-between text-xs">
+            <div class="flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#E11D48]"></span>
+              <span class="text-sm font-black text-[#111113]" id="feedRingsTitle">활동 현황</span>
+            </div>
+            <span class="text-xs font-bold text-[#71717A]" id="feedRingsPeriodSubtitle">이번 주 활동 현황</span>
+            <span class="hidden" id="feedRingsPeriodBadge"></span>
+          </div>
+
+          <!-- 중앙 집중형 대형 링 차트 & 텍스트 지표 (모바일: 세로 중앙 집중, 태블릿/PC: 가로 분할 반응형, 상하 불필요 여백 최적화) -->
+          <div class="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-10 py-0">
+            <!-- 대형 3중 동심원 링 SVG (w-[268px] h-[268px] / md:w-[300px] md:h-[300px], 여백 타이트 조정) -->
+            <div class="relative w-[268px] h-[268px] sm:w-[280px] sm:h-[280px] md:w-[300px] md:h-[300px] flex-shrink-0 flex items-center justify-center -my-1">
+              <svg class="w-[268px] h-[268px] sm:w-[280px] sm:h-[280px] md:w-[300px] md:h-[300px] transform -rotate-90 overflow-visible" viewBox="0 0 120 120">
+                <!-- 배경 트랙 3개 -->
+                <circle cx="60" cy="60" r="48" fill="none" stroke="#E5E7EB" stroke-width="8" />
+                <circle cx="60" cy="60" r="35" fill="none" stroke="#E5E7EB" stroke-width="8" />
+                <circle cx="60" cy="60" r="22" fill="none" stroke="#E5E7EB" stroke-width="8" />
+
+                <!-- 링 1: 바깥쪽 (레드) - 목표 시간 달성률 -->
+                <circle id="ringArcTime" cx="60" cy="60" r="48" fill="none" stroke="#E11D48" stroke-width="8" stroke-linecap="round"
+                  stroke-dasharray="301.6" stroke-dashoffset="301.6" class="transition-all duration-700 ease-out" />
+
+                <!-- 링 2: 중간 (블랙 100%) - 운동 일수 비율 -->
+                <circle id="ringArcDays" cx="60" cy="60" r="35" fill="none" stroke="#18181B" stroke-width="8" stroke-linecap="round"
+                  stroke-dasharray="219.9" stroke-dashoffset="219.9" class="transition-all duration-700 ease-out" />
+
+                <!-- 링 3: 안쪽 (검정 30% / 그레이) - 목표 횟수 달성률 -->
+                <circle id="ringArcFreq" cx="60" cy="60" r="22" fill="none" stroke="rgba(0, 0, 0, 0.30)" stroke-width="8" stroke-linecap="round"
+                  stroke-dasharray="138.2" stroke-dashoffset="138.2" class="transition-all duration-700 ease-out" />
+              </svg>
+            </div>
+
+            <!-- 3대 지표 리스트: 텍스트 2pt 확대 & 26% 뱃지 5% 확대, 깔끔한 슬림 디바이더 -->
+            <div class="w-full max-w-[250px] sm:max-w-[260px] md:max-w-[270px] divide-y divide-black/[0.04]">
+              <!-- 지표 1: 목표 시간 달성 (레드) -->
+              <div class="flex items-center justify-between py-1.5">
+                <div class="flex items-center space-x-2.5 min-w-0">
+                  <span class="w-3 h-3 rounded-full bg-[#E11D48] flex-shrink-0"></span>
+                  <div class="min-w-0">
+                    <span class="text-[13px] md:text-sm font-semibold text-[#71717A] block leading-tight truncate" id="ringLegendLabel1">월간 목표 시간 달성</span>
+                    <span class="text-[14px] md:text-base font-black text-[#111113] block mt-0.5 leading-tight truncate" id="ringLegendSub1">185분 / 720분</span>
+                  </div>
+                </div>
+                <span class="text-[13px] md:text-sm font-black text-[#E11D48] px-2.5 py-1 rounded-full bg-[#FFF1F2] flex-shrink-0 shadow-sm" id="ringLegendVal1">26%</span>
+              </div>
+
+              <!-- 지표 2: 운동 일수 비율 (블랙 100%) -->
+              <div class="flex items-center justify-between py-1.5">
+                <div class="flex items-center space-x-2.5 min-w-0">
+                  <span class="w-3 h-3 rounded-full bg-[#18181B] flex-shrink-0"></span>
+                  <div class="min-w-0">
+                    <span class="text-[13px] md:text-sm font-semibold text-[#71717A] block leading-tight truncate" id="ringLegendLabel2">이번 달 운동 일수</span>
+                    <span class="text-[14px] md:text-base font-black text-[#111113] block mt-0.5 leading-tight truncate" id="ringLegendSub2">8일 / 31일</span>
+                  </div>
+                </div>
+                <span class="text-[13px] md:text-sm font-black text-[#18181B] px-2.5 py-1 rounded-full bg-[#E4E4E7]/70 flex-shrink-0 shadow-sm" id="ringLegendVal2">26%</span>
+              </div>
+
+              <!-- 지표 3: 목표 횟수 달성 (검정 30% / 그레이) -->
+              <div class="flex items-center justify-between py-1.5">
+                <div class="flex items-center space-x-2.5 min-w-0">
+                  <span class="w-3 h-3 rounded-full bg-[#9CA3AF] flex-shrink-0"></span>
+                  <div class="min-w-0">
+                    <span class="text-[13px] md:text-sm font-semibold text-[#71717A] block leading-tight truncate" id="ringLegendLabel3">월간 목표 횟수 달성</span>
+                    <span class="text-[14px] md:text-base font-black text-[#111113] block mt-0.5 leading-tight truncate" id="ringLegendSub3">8회 / 12회</span>
+                  </div>
+                </div>
+                <span class="text-[13px] md:text-sm font-black text-[#71717A] px-2.5 py-1 rounded-full bg-[#E4E4E7]/70 flex-shrink-0 shadow-sm" id="ringLegendVal3">67%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 하단 슬림 보조 정보 (최근 총 시간 및 평균 운동 시간 - 겹침 및 잘림 방지 flex 레이아웃) -->
+          <div class="border-t border-[#E5E7EB]/70 pt-2.5 mt-1 flex items-center justify-between text-xs px-0.5 gap-2">
+            <div class="flex items-center space-x-1 min-w-0">
+              <span class="text-[#71717A] font-medium whitespace-nowrap" id="feedMetric1Label">최근 6주:</span>
+              <span class="font-black text-[#111113] truncate" id="feedMetric1Val">3시간 5분</span>
+            </div>
+            <div class="flex items-center space-x-1 min-w-0 justify-end text-right">
+              <span class="text-[#71717A] font-medium whitespace-nowrap" id="feedMetric2Label">주 평균:</span>
+              <span class="font-black text-[#E11D48] truncate" id="feedMetric2Val">31분</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 하단 기간별 일일/주차별/월별 활동 볼륨 바 차트 -->
+        <div class="pt-2 border-t border-[#F4F4F6] space-y-1.5">
+          <div class="flex items-center justify-between text-xs font-bold text-[#71717A]">
+            <span id="feedChartTitle">최근 7일간 운동 시간 (분)</span>
+            <span class="text-xs font-semibold text-[#71717A]" id="feedChartHint">막대를 눌러 날짜별 확인</span>
+          </div>
+          
+          <div class="w-full h-28 bg-[#F8F8FA] rounded-2xl p-2.5 border border-black/[0.03] flex items-end justify-between px-2" id="feedVolumeBarContainer">
+          </div>
+        </div>
+
+      </section>
+
+      <!-- 태블릿/데스크톱 2열 분할 레이아웃: (좌) 캘린더 (우) 종목 필터 & 피드 목록 -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start">
+        
+        <!-- 좌측 컬럼: 월간 캘린더 (태블릿/PC에서 상단 고정 탐색 지원) -->
+        <div class="lg:col-span-5 space-y-4 lg:sticky lg:top-4">
+          <!-- 4-2. 운동 달력 뷰 카드 (월간 달력, 오늘 이동, 선택 강조) -->
+          <section class="p-4 rounded-3xl bg-white border border-black/[0.04] shadow-[0_2px_16px_rgba(0,0,0,0.03)] space-y-3">
+            <!-- 캘린더 상단 월 네비게이션 -->
+            <div class="flex items-center justify-between border-b border-[#F4F4F6] pb-2.5">
+              <div class="flex items-center space-x-2">
+                <span class="text-base font-black text-[#111113]" id="calCurrentMonthTitle">2026년 10월</span>
+                <span class="text-xs px-2.5 py-0.5 rounded-full bg-[#FFF1F2] text-[#E11D48] font-bold" id="calMonthWorkoutCount">0일 운동 완료</span>
+              </div>
+              <div class="flex items-center space-x-1.5">
+                <button id="btnCalPrevMonth" type="button" class="w-10 h-10 rounded-full bg-[#F4F4F6] hover:bg-[#E4E4E7] active:scale-95 flex items-center justify-center text-lg text-[#111113] font-bold transition shadow-sm" title="이전 달">&lsaquo;</button>
+                <button id="btnCalToday" type="button" class="min-h-[40px] px-3.5 py-2 rounded-full bg-[#F4F4F6] hover:bg-[#E4E4E7] active:scale-95 text-xs text-[#18181B] font-bold transition shadow-sm" title="오늘로 이동">오늘</button>
+                <button id="btnCalNextMonth" type="button" class="w-10 h-10 rounded-full bg-[#F4F4F6] hover:bg-[#E4E4E7] active:scale-95 flex items-center justify-center text-lg text-[#111113] font-bold transition shadow-sm" title="다음 달">&rsaquo;</button>
+              </div>
+            </div>
+
+            <!-- 요일 헤더 -->
+            <div class="grid grid-cols-7 text-center text-xs font-bold text-[#71717A]">
+              <span class="text-rose-600">일</span>
+              <span>월</span>
+              <span>화</span>
+              <span>수</span>
+              <span>목</span>
+              <span>금</span>
+              <span class="text-blue-600">토</span>
+            </div>
+
+            <!-- 날짜 그리드 -->
+            <div class="grid grid-cols-7 gap-y-1 text-center" id="calDaysGrid">
+            </div>
+
+            <!-- 캘린더 하단 선택 날짜 안내 및 필터 해제 바 -->
+            <div id="calFilterNotice" class="hidden flex items-center justify-between p-2.5 rounded-2xl bg-[#FFF1F2] border border-[#FFE4E6] text-xs">
+              <div class="flex items-center space-x-1.5 text-[#BE123C] font-bold">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <span id="calFilterText">10월 10일 기록</span>
+              </div>
+              <button id="btnClearDateFilter" type="button" class="text-xs font-bold text-[#BE123C] hover:underline">전체보기 ✕</button>
+            </div>
+          </section>
+        </div>
+
+        <!-- 우측 컬럼: 종목 필터 칩 바 & 운동 기록 목록 피드 -->
+        <div class="lg:col-span-7 space-y-3">
+          <!-- 4-3. 동적 종목 필터 칩 바 (전체, 런닝, 자전거, 맨몸 + 직접 입력 종목) -->
+          <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 text-xs font-bold custom-scrollbar" id="feedFilterChipsContainer">
+            <!-- JS로 동적 렌더링 -->
+          </div>
+
+          <!-- 4-4. 운동 기록 목록 카드 (최신순 정렬, 클릭 시 상세 수정/삭제) -->
+          <section class="p-4 rounded-3xl bg-white border border-black/[0.04] shadow-[0_2px_16px_rgba(0,0,0,0.03)] space-y-3">
+            <div class="flex items-center justify-between border-b border-[#F4F4F6] pb-2.5">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-xs font-bold text-[#71717A]" id="feedListHeading">한 번씩 쌓아온 기록</span>
+                <span class="px-2 py-0.5 rounded-full bg-[#F4F4F6] text-xs font-black text-[#111113]" id="feedTotalBadge">0</span>
+              </div>
+              <span class="text-xs text-[#71717A] font-semibold" id="feedSortNotice">최신순 정렬</span>
+            </div>
+
+            <!-- 피드 목록 컨테이너 -->
+            <div id="feedRecordList" class="space-y-2">
+            </div>
+
+            <!-- 더 보기 버튼 -->
+            <div id="feedLoadMoreContainer" class="pt-2 text-center hidden">
+              <button id="btnFeedLoadMore" type="button" class="w-full py-2.5 rounded-2xl bg-[#F4F4F6] hover:bg-[#E4E4E7] text-[#111113] text-xs font-bold transition flex items-center justify-center space-x-1">
+                <span id="feedLoadMoreText">더 보기</span>
+                <span class="text-xs text-[#71717A]" id="feedLoadMoreCounter">(10 / 12)</span>
+              </button>
+            </div>
+          </section>
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 6. 하단 플로팅 캡슐 독 (선택 상태 명확화 & 플러스 추가 버튼) -->
+  <!-- ============================================================ -->
+  <aside class="fixed bottom-4 left-0 right-0 z-40 px-4 pointer-events-none flex justify-center" style="padding-bottom: env(safe-area-inset-bottom, 0px);">
+    <div class="bg-white/95 backdrop-blur-xl rounded-full p-1.5 px-3 shadow-[0_12px_36px_rgba(0,0,0,0.12)] border border-black/[0.06] flex items-center space-x-3 pointer-events-auto" role="navigation" aria-label="하단 네비게이션">
+      
+      <!-- 1) 나의 성장 탭 버튼 -->
+      <button id="tabGrowthBtn" type="button" class="w-11 h-11 rounded-full bg-[#18181B] text-white flex items-center justify-center shadow-sm active:scale-95 transition" title="나의 성장 탭으로 이동" aria-label="나의 성장 탭">
+        <svg class="w-5 h-5 text-[#E11D48]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+        </svg>
+      </button>
+
+      <!-- 2) 중앙 크림슨 레드 [+] 액션 버튼 (운동 기록 추가) -->
+      <button id="btnAddRecordMain" type="button" class="w-12 h-12 rounded-full bg-[#E11D48] hover:bg-[#BE123C] text-white shadow-[0_4px_16px_rgba(225,29,72,0.4)] ring-4 ring-white flex items-center justify-center active:scale-95 transition flex-shrink-0" title="새 운동 기록 추가" aria-label="새 운동 기록 추가">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 5v14m7-7H5"></path>
+        </svg>
+      </button>
+
+      <!-- 3) 운동 기록 탭 버튼 -->
+      <button id="tabRecordsBtn" type="button" class="w-11 h-11 rounded-full text-[#71717A] hover:text-[#18181B] flex items-center justify-center active:scale-95 transition" title="운동 기록 탭으로 이동" aria-label="운동 기록 탭">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+        </svg>
+      </button>
+
+    </div>
+  </aside>
+
+  <!-- ============================================================ -->
+  <!-- 모달 1: 목표 설정 모달 -->
+  <!-- ============================================================ -->
+  <div id="goalModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 space-y-4 shadow-2xl text-xs text-[#111113]">
+      <div class="flex items-center justify-between border-b border-[#F4F4F6] pb-3">
+        <h3 class="font-black text-sm flex items-center space-x-2 text-[#111113]">
+          <svg class="w-4 h-4 text-[#E11D48]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+          </svg>
+          <span>목표 설정</span>
+        </h3>
+        <button id="btnCloseGoalModal" type="button" class="p-1 rounded-lg text-[#71717A] hover:text-[#111113]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <form id="goalForm" class="space-y-3.5">
+        <div class="p-3.5 rounded-2xl bg-[#F8F8FA] border border-black/[0.04] space-y-2">
+          <span class="font-black text-xs text-[#111113] flex items-center space-x-1.5">
+            <svg class="w-3.5 h-3.5 text-[#E11D48]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            <span>월간 목표 설정</span>
+          </span>
+          <div>
+            <label for="inputMonthGoalCount" class="block font-bold text-[#71717A] mb-1">한 달 목표 횟수 (회)</label>
+            <input type="number" id="inputMonthGoalCount" min="1" max="60" value="12" class="w-full bg-white border border-[#E4E4E7] rounded-xl px-3 py-2 text-sm font-black text-[#111113] focus:outline-none focus:border-[#E11D48]">
+          </div>
+          <div>
+            <label for="inputMonthGoalReward" class="block font-bold text-[#71717A] mb-1">월간 달성 보상</label>
+            <input type="text" id="inputMonthGoalReward" placeholder="예: 치팅데이 맛있는 치킨 먹기" class="w-full bg-white border border-[#E4E4E7] rounded-xl px-3 py-2 text-xs font-bold text-[#111113] focus:outline-none focus:border-[#E11D48]">
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-[#F8F8FA] border border-black/[0.04] space-y-2">
+          <span class="font-black text-xs text-[#111113] flex items-center space-x-1.5">
+            <svg class="w-3.5 h-3.5 text-[#E11D48]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+            <span>연간 목표 설정</span>
+          </span>
+          <div>
+            <label for="inputYearGoalCount" class="block font-bold text-[#71717A] mb-1">1년 누적 목표 횟수 (회)</label>
+            <input type="number" id="inputYearGoalCount" min="1" max="500" value="120" class="w-full bg-white border border-[#E4E4E7] rounded-xl px-3 py-2 text-sm font-black text-[#111113] focus:outline-none focus:border-[#E11D48]">
+          </div>
+          <div>
+            <label for="inputYearGoalReward" class="block font-bold text-[#71717A] mb-1">연간 최종 보상</label>
+            <input type="text" id="inputYearGoalReward" placeholder="예: 제주도 힐링 여행" class="w-full bg-white border border-[#E4E4E7] rounded-xl px-3 py-2 text-xs font-bold text-[#111113] focus:outline-none focus:border-[#E11D48]">
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-end space-x-2">
+          <button type="button" id="btnCancelGoal" class="px-4 py-2.5 rounded-xl bg-[#F4F4F6] text-[#71717A] font-bold">취소</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#18181B] text-white font-black hover:bg-black transition">설정 저장</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 모달 2: 지난 목표 달성 히스토리 모달 -->
+  <!-- ============================================================ -->
+  <div id="goalHistoryModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 space-y-4 shadow-2xl text-xs text-[#111113]">
+      <div class="flex items-center justify-between border-b border-[#F4F4F6] pb-3">
+        <h3 class="font-black text-sm flex items-center space-x-2 text-[#111113]">
+          <svg class="w-4 h-4 text-[#E11D48]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span>목표 달성 히스토리</span>
+        </h3>
+        <button id="btnCloseGoalHistoryModal" type="button" class="p-1 rounded-lg text-[#71717A] hover:text-[#111113]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <p class="text-xs text-[#71717A] font-medium">
+        지나온 달의 목표 달성 여부와 보상 획득 기록을 살펴보세요.
+      </p>
+
+      <div id="goalHistoryList" class="space-y-2 max-h-72 overflow-y-auto custom-scrollbar">
+      </div>
+
+      <div class="pt-2 flex justify-end">
+        <button id="btnCloseGoalHistoryBtn" type="button" class="w-full py-2.5 rounded-xl bg-[#18181B] text-white font-black">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 모달 3: 운동 기록 추가 / 수정 모달 (상세 확인, 수정, 삭제) -->
+  <!-- ============================================================ -->
+  <div id="recordModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 space-y-4 shadow-2xl text-xs text-[#111113] max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div class="flex items-center justify-between border-b border-[#F4F4F6] pb-3">
+        <h3 id="modalTitle" class="font-black text-sm">운동 기록 추가</h3>
+        <button id="btnCloseRecordModal" type="button" class="p-1 rounded-lg text-[#71717A] hover:text-[#111113]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <form id="recordForm" class="space-y-3.5">
+        <input type="hidden" id="editRecordId">
+
+        <div>
+          <label class="block font-bold text-[#71717A] mb-1.5">운동 종목</label>
+          <div class="grid grid-cols-3 gap-1.5">
+            <button type="button" class="type-btn p-2.5 rounded-xl border border-[#FFE4E6] bg-[#FFF1F2] text-[#BE123C] font-bold flex items-center justify-center space-x-1" data-type="런닝">
+              <svg class="w-3.5 h-3.5 flex-shrink-0 text-[#E11D48]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              <span>런닝</span>
+            </button>
+            <button type="button" class="type-btn p-2.5 rounded-xl border border-[#E4E4E7] bg-white text-[#71717A] font-bold flex items-center justify-center space-x-1" data-type="실내 자전거">
+              <svg class="w-3.5 h-3.5 flex-shrink-0 text-[#18181B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="3.5" stroke-width="2"></circle><circle cx="18.5" cy="17.5" r="3.5" stroke-width="2"></circle><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 6a1 1 0 100-2 1 1 0 000 2zm-3 11.5V14l-3-3 4-3 2 3h2"></path></svg>
+              <span>실내 자전거</span>
+            </button>
+            <button type="button" class="type-btn p-2.5 rounded-xl border border-[#E4E4E7] bg-white text-[#71717A] font-bold flex items-center justify-center space-x-1" data-type="맨몸운동">
+              <svg class="w-3.5 h-3.5 flex-shrink-0 text-[#71717A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2M9 12h6m-6-3v6m6-6v6"></path></svg>
+              <span>맨몸운동</span>
+            </button>
+          </div>
+          <input type="text" id="customTypeInput" placeholder="직접 입력 (예: 수영, 등산, 요가, 필라테스)" class="mt-1.5 w-full bg-[#F8F8FA] border border-[#E4E4E7] rounded-xl px-3 py-2 text-[#111113] font-medium focus:outline-none focus:border-[#E11D48]">
+        </div>
+
+        <!-- 종목별 맞춤 메인 입력단 (운동 시간 + 핵심 필드) -->
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label for="inputDurationMin" class="block font-bold text-[#71717A] mb-1">운동 시간 (분)</label>
+            <input type="number" id="inputDurationMin" min="1" value="60" class="w-full bg-[#F8F8FA] border border-[#E4E4E7] rounded-xl px-3 py-2 text-sm font-black text-[#111113] focus:outline-none focus:border-[#E11D48]">
+          </div>
+
+          <!-- 1. 런닝: 달린 거리 (km) -->
+          <div id="colRunningDistance">
+            <label for="inputRunDistance" class="block font-bold text-[#71717A] mb-1">달린 거리 (km, 선택)</label>
+            <input type="number" step="0.1" min="0" id="inputRunDistance" placeholder="예: 5.0" class="w-full bg-[#F8F8FA] border border-[#E4E4E7] rounded-xl px-3 py-2 text-sm font-black text-[#111113] focus:outline-none focus:border-[#E11D48]">
+          </div>
+
+          <!-- 2. 실내 자전거: 주행 거리 (km) -->
+          <div id="colCyclingDistance" class="hidden">
+            <label for="inputBikeDistance" class="block font-bold text-[#71717A] mb-1">주행 거리 (km, 선택)</label>
+            <input type="number" step="0.1" min="0" id="inputBikeDistance" placeholder="예: 15.0" class="w-full bg-[#F8F8FA] border border-[#E4E4E7] rounded-xl px-3 py-2 text-sm font-black text-[#111113] focus:outline-none focus:border-[#E11D48]">
+          </div>
+
+          <!-- 3. 맨몸운동 및 직접입력: 세트 수 / 라운드 -->
+          <div id="colRounds" class="hidden">
+            <label id="labelRoundsOrSets" for="inputRounds" class="block font-bold text-[#71717A] mb-1">세트 수 (세트)</label>
+            <input type="number" id="inputRounds" min="1" value="1" class="w-full bg-[#F8F8FA] border border-[#E4E4E7] rounded-xl px-3 py-2 text-sm font-black text-[#111113] focus:outline-none focus:border-[#E11D48]">
+          </div>
+        </div>
+
+        <!-- 종목별 맞춤 보조 입력 영역 -->
+        <!-- 런닝: 인터벌 라운드 옵션 (기본 숨김) -->
+        <div id="extraFieldsRunning" class="pt-0.5">
+          <button type="button" id="btnToggleRunInterval" class="text-xs font-bold text-[#71717A] hover:text-[#E11D48] flex items-center space-x-1.5 py-0.5 transition cursor-pointer">
+            <span id="toggleRunIntervalIcon" class="w-4 h-4 rounded-full bg-[#E4E4E7] text-[#111113] inline-flex items-center justify-center text-xs font-black">+</span>
+            <span>인터벌 훈련 라운드 입력 (선택)</span>
+          </button>
+          <div id="boxRunInterval" class="hidden mt-2 p-3 rounded-2xl bg-[#F8F8FA] border border-[#E4E4E7]">
+            <label for="inputRunRounds" class="block font-bold text-[#71717A] mb-1">인터벌 라운드 (R)</label>
+            <input type="number" id="inputRunRounds" min="1" placeholder="1" value="1" class="w-full bg-white border border-[#E4E4E7] rounded-xl px-3 py-2 text-sm font-black text-[#111113] focus:outline-none focus:border-[#E11D48]">
+          </div>
+        </div>
+
+        <!-- 실내 자전거: 저항 강도 & 인터벌 라운드 -->
+        <div id="extraFieldsCycling" class="hidden p-3 rounded-2xl bg-[#F8F8FA] border border-[#E4E4E7] grid grid-cols-2 gap-2">
+          <div>
+            <label for="inputBikeLevel" class="block font-bold text-[#71717A] mb-1">저항 강도 (단, 선택)</label>
+            <input type="number" min="1" max="30" id="inputBikeLevel" placeholder="예: 5" class="w-full bg-white border border-[#E4E4E7] rounded-xl px-3 py-2 text-sm font-black text-[#111113] focus:outline-none focus:border-[#E11D48]">
+          </div>
+          <div>
+            <label for="inputBikeRounds" class="block font-bold text-[#71717A] mb-1">인터벌 라운드 (선택)</label>
+            <input type="number" min="1" id="inputBikeRounds" placeholder="1" value="1" class="w-full bg-white border border-[#E4E4E7] rounded-xl px-3 py-2 text-sm font-black text-[#111113] focus:outline-none focus:border-[#E11D48]">
+          </div>
+        </div>
+
+        <!-- 맨몸운동: 세부 운동 동작 칩 및 입력 -->
+        <div id="extraFieldsBodyweight" class="hidden p-3.5 rounded-2xl bg-[#F8F8FA] border border-[#E4E4E7] space-y-2">
+          <label for="inputBodyMoves" class="block font-bold text-[#71717A]">세부 운동 동작 (선택)</label>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" class="bw-chip px-2.5 py-1 rounded-lg bg-white border border-[#E4E4E7] text-[#111113] font-bold hover:bg-[#FFF1F2]" data-move="스쿼트">스쿼트</button>
+            <button type="button" class="bw-chip px-2.5 py-1 rounded-lg bg-white border border-[#E4E4E7] text-[#111113] font-bold hover:bg-[#FFF1F2]" data-move="푸쉬업">푸쉬업</button>
+            <button type="button" class="bw-chip px-2.5 py-1 rounded-lg bg-white border border-[#E4E4E7] text-[#111113] font-bold hover:bg-[#FFF1F2]" data-move="런지">런지</button>
+            <button type="button" class="bw-chip px-2.5 py-1 rounded-lg bg-white border border-[#E4E4E7] text-[#111113] font-bold hover:bg-[#FFF1F2]" data-move="플랭크">플랭크</button>
+            <button type="button" class="bw-chip px-2.5 py-1 rounded-lg bg-white border border-[#E4E4E7] text-[#111113] font-bold hover:bg-[#FFF1F2]" data-move="턱걸이">턱걸이</button>
+          </div>
+          <input type="text" id="inputBodyMoves" placeholder="예: 스쿼트 20회, 푸쉬업 15회" class="w-full bg-white border border-[#E4E4E7] rounded-xl px-3 py-2 text-xs font-bold text-[#111113] focus:outline-none focus:border-[#E11D48]">
+        </div>
+
+        <div>
+          <label for="inputDateTime" class="block font-bold text-[#71717A] mb-1">운동 일시</label>
+          <input type="datetime-local" id="inputDateTime" class="w-full bg-[#F8F8FA] border border-[#E4E4E7] rounded-xl px-3 py-2 text-[#111113] font-semibold focus:outline-none focus:border-[#E11D48]">
+        </div>
+
+        <div>
+          <label for="inputNotes" class="block font-bold text-[#71717A] mb-1">메모 (거리, 강도, 컨디션)</label>
+          <textarea id="inputNotes" rows="2" placeholder="예: 다리 피로도 낮고 호흡 안정적" class="w-full bg-[#F8F8FA] border border-[#E4E4E7] rounded-xl px-3 py-2 text-[#111113] focus:outline-none focus:border-[#E11D48]"></textarea>
+        </div>
+
+        <div class="pt-2 flex space-x-2">
+          <button type="button" id="btnDeleteRecord" class="hidden px-4 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold transition">삭제</button>
+          <button type="submit" id="btnSaveRecord" class="flex-1 py-2.5 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white font-black shadow-md transition">저장하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 모달 4: 구글 시트 연동 및 데이터 백업/복구 모달 -->
+  <!-- ============================================================ -->
+  <div id="sheetModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-5 space-y-4 shadow-2xl text-xs text-[#111113] max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div class="flex items-center justify-between border-b border-[#F4F4F6] pb-3">
+        <div class="flex items-center space-x-2">
+          <svg class="w-4 h-4 text-[#E11D48]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          <h3 class="font-black text-sm">데이터 관리 & 구글 시트 연동</h3>
+        </div>
+        <button id="btnCloseSheetModal" type="button" class="p-1 rounded-lg text-[#71717A] hover:text-[#111113]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <!-- 1. 구글 시트 실시간 연동 섹션 -->
+      <div class="space-y-2">
+        <span class="text-xs font-black text-[#111113] block">구글 시트 실시간 연동 (Google Apps Script)</span>
+        <p class="text-[#71717A] leading-relaxed font-medium">
+          Apps Script 웹 앱 URL을 연결하면 스마트싱스 자동 기록과 수동 기록이 구글 스프레드시트와 실시간으로 동기화됩니다.
+        </p>
+
+        <div>
+          <label for="inputGasUrl" class="block font-bold text-[#71717A] mb-1">Apps Script 웹 앱 URL</label>
+          <input type="url" id="inputGasUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-[#F8F8FA] border border-[#E4E4E7] rounded-xl px-3 py-2 text-[#111113] text-xs focus:outline-none focus:border-[#E11D48]">
+        </div>
+
+        <div class="flex items-center justify-between pt-1">
+          <button id="btnClearGasUrl" type="button" class="text-[#71717A] hover:text-rose-600 text-xs font-bold">기본 URL 복원</button>
+          <div class="flex space-x-1.5">
+            <button id="btnSyncNow" type="button" class="px-3 py-1.5 rounded-xl bg-[#F4F4F6] hover:bg-[#E4E4E7] text-[#111113] font-bold transition">지금 동기화</button>
+            <button id="btnSaveGasUrl" type="button" class="px-3.5 py-1.5 rounded-xl bg-[#18181B] hover:bg-black text-white font-black transition">저장</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. 데이터 로컬 백업 및 복구 섹션 -->
+      <div class="p-3.5 rounded-2xl bg-[#F8F8FA] border border-black/[0.04] space-y-3 pt-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-1.5">
+            <svg class="w-4 h-4 text-[#E11D48]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path>
+            </svg>
+            <span class="font-black text-xs text-[#111113]">데이터 백업 및 복구</span>
+          </div>
+          <span class="text-xs font-bold text-[#E11D48]" id="backupCountLabel">0개 기록 보관 중</span>
+        </div>
+
+        <p class="text-xs text-[#71717A] leading-relaxed">
+          운동 기록과 목표 설정 데이터를 JSON 파일로 다운로드하거나, 다른 기기에서 복구하여 안전하게 보관하세요.
+        </p>
+
+        <div class="grid grid-cols-2 gap-2">
+          <!-- 백업 다운로드 버튼 -->
+          <button type="button" id="btnExportBackup" class="py-2.5 px-2 rounded-xl bg-white border border-[#E4E4E7] hover:bg-[#F4F4F6] text-[#111113] font-bold text-xs flex items-center justify-center space-x-1.5 transition shadow-sm active:scale-95">
+            <svg class="w-3.5 h-3.5 text-[#E11D48]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            <span>백업 파일 저장</span>
+          </button>
+
+          <!-- 복구 파일 불러오기 버튼 -->
+          <button type="button" id="btnImportBackup" class="py-2.5 px-2 rounded-xl bg-white border border-[#E4E4E7] hover:bg-[#F4F4F6] text-[#111113] font-bold text-xs flex items-center justify-center space-x-1.5 transition shadow-sm active:scale-95">
+            <svg class="w-3.5 h-3.5 text-[#18181B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+            </svg>
+            <span>백업 파일 복구</span>
+          </button>
+        </div>
+
+        <!-- 클립보드 복사 보조 버튼 -->
+        <button type="button" id="btnCopyBackupClipboard" class="w-full py-2 rounded-xl bg-white border border-[#E4E4E7] hover:bg-[#F4F4F6] text-[#71717A] text-[11px] font-bold transition flex items-center justify-center space-x-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+          <span>클립보드로 JSON 복사</span>
+        </button>
+
+        <input type="file" id="inputBackupFile" accept=".json" class="hidden">
+      </div>
+
+      <!-- 3. 크롬 PWA 앱 설치 안내 섹션 -->
+      <div class="p-3.5 rounded-2xl bg-[#F8F8FA] border border-black/[0.04] space-y-2.5">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-1.5">
+            <svg class="w-4 h-4 text-[#E11D48]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+            </svg>
+            <span class="font-black text-xs text-[#111113]">크롬 앱 설치 (PWA)</span>
+          </div>
+          <span class="text-[10px] font-bold text-[#E11D48]" id="installStatusBadge">확인 중</span>
+        </div>
+        <p class="text-[11px] text-[#71717A] leading-relaxed font-medium">
+          독립된 데스크톱 앱 창으로 실행하여 Dock과 Launchpad에서 바로 열 수 있습니다.
+        </p>
+        <button type="button" id="btnModalInstall" class="w-full py-2.5 px-3 rounded-xl bg-[#18181B] hover:bg-black text-white font-black text-xs flex items-center justify-center space-x-1.5 transition shadow-sm active:scale-95">
+          <svg class="w-3.5 h-3.5 text-[#E11D48]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+          </svg>
+          <span id="btnModalInstallText">앱으로 설치하기</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 모달 5: 크롬 앱 설치 가이드 모달 -->
+  <!-- ============================================================ -->
+  <div id="installGuideModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl text-xs text-[#111113] max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div class="flex items-center justify-between border-b border-[#F4F4F6] pb-3">
+        <div class="flex items-center space-x-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#E11D48]"></span>
+          <h3 class="font-black text-sm">크롬 앱 설치 안내</h3>
+        </div>
+        <button id="btnCloseInstallGuideModal" type="button" class="p-1 rounded-lg text-[#71717A] hover:text-[#111113]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="space-y-3.5">
+        <div class="p-3.5 rounded-2xl bg-[#FFF1F2] border border-[#FECDD3] space-y-1.5">
+          <span class="font-black text-xs text-[#E11D48] block">💡 왜 '설치할 수 없음'이 떴을까요?</span>
+          <p class="text-[11px] text-[#881337] leading-relaxed font-medium">
+            크롬은 보안 정책상 <code class="bg-white/80 px-1 py-0.5 rounded font-mono text-[10px]">file://</code>(파일 직접 열기) 주소에서는 앱 설치 기능을 차단합니다. <strong>로컬 웹 서버(localhost)</strong>를 통해 열어야 크롬 설치 버튼이 활성화됩니다.
+          </p>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-[#F8F8FA] border border-black/[0.04] space-y-2">
+          <div class="flex items-center space-x-1.5">
+            <span class="px-1.5 py-0.5 rounded-md bg-[#18181B] text-white text-[10px] font-black">방법 1</span>
+            <span class="font-black text-xs text-[#111113]">로컬 서버로 실행 (권장 · 원클릭 설치)</span>
+          </div>
+          <ol class="text-[11px] text-[#71717A] space-y-1.5 list-decimal list-inside leading-relaxed font-medium">
+            <li>앱 폴더의 <code class="text-[#111113] font-bold bg-white px-1.5 py-0.5 rounded border border-[#E4E4E7]">start_app.command</code> (또는 <code class="text-[#111113] font-bold bg-white px-1.5 py-0.5 rounded border border-[#E4E4E7]">앱_실행하기.command</code>)를 더블 클릭합니다.</li>
+            <li>브라우저가 <code class="text-[#E11D48] font-bold">http://localhost:8080</code>으로 열립니다.</li>
+            <li>크롬 주소창 오른쪽 끝의 <strong>[설치 ⊕]</strong> 아이콘(또는 상단 [앱 설치] 버튼)을 누르면 맥북 독립 앱으로 바로 설치됩니다!</li>
+          </ol>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-[#F8F8FA] border border-black/[0.04] space-y-2">
+          <div class="flex items-center space-x-1.5">
+            <span class="px-1.5 py-0.5 rounded-md bg-[#71717A] text-white text-[10px] font-black">방법 2</span>
+            <span class="font-black text-xs text-[#111113]">크롬 메뉴에서 즉시 바로가기 생성</span>
+          </div>
+          <ol class="text-[11px] text-[#71717A] space-y-1.5 list-decimal list-inside leading-relaxed font-medium">
+            <li>크롬 우측 상단의 <strong>더보기 메뉴(⋮)</strong>를 누릅니다.</li>
+            <li><strong>[전송, 저장 및 공유]</strong> &gt; <strong>[바로가기 만들기...]</strong>를 선택합니다.</li>
+            <li><strong class="text-[#111113]">'창으로 열기'</strong>에 체크한 뒤 <strong>[만들기]</strong>를 누르면 Dock과 Launchpad에 독립 앱으로 생성됩니다.</li>
+          </ol>
+        </div>
+      </div>
+
+      <button type="button" onclick="document.getElementById('installGuideModal').classList.add('hidden')" class="w-full py-2.5 rounded-xl bg-[#18181B] text-white font-black text-xs transition hover:bg-black">
+        확인했습니다
+      </button>
+    </div>
+  </div>
+
+  <!-- 토스트 알림 -->
+  <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-[#18181B] text-white text-xs font-bold shadow-2xl backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300 z-50">
+    알림 내용
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 스크립트 엔진 -->
+  <!-- ============================================================ -->
+  <script>
+    const STORAGE_KEY_RECORDS = 'mygrowth_workout_records';
+    const STORAGE_KEY_GAS_URL = 'mygrowth_gas_url';
+    const STORAGE_KEY_GOALS = 'mygrowth_goals_v2';
+    const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbxaovRVAP36tlDmrL_qeK6bGL6JMVwiEmRSzhmA9W0AuVHWR90ktLT3gYIGLbVVrt3Vaw/exec';
+
+    let currentTab = 'growth';
+    let currentFilter = 'all';
+    let currentPeriod = '4w'; // '1w', '4w', 'all'
+    let currentGoalType = 'month'; // 'month' or 'year'
+    let feedGraphUnit = 'daily'; // 'daily', 'weekly', 'monthly'
+    let selectedType = '런닝';
+    let records = [];
+
+    let feedVisibleLimit = 10;
+
+    // 캘린더 상태 (항상 월간 전체 보기)
+    let calYear = new Date().getFullYear();
+    let calMonth = new Date().getMonth(); // 0-indexed
+    let selectedCalendarDate = null;
+
+    // 월간/연간 목표 상태
+    let userGoals = {
+      monthCount: 12,
+      monthReward: '치팅데이 맛있는 치킨 먹기',
+      yearCount: 120,
+      yearReward: '제주도 힐링 여행'
+    };
+
+    function getActiveGasUrl() {
+      return localStorage.getItem(STORAGE_KEY_GAS_URL) || DEFAULT_GAS_URL;
+    }
+
+    function parseDate(dStr) {
+      if (!dStr) return new Date();
+      if (dStr instanceof Date) return isNaN(dStr.getTime()) ? new Date() : dStr;
+      if (typeof dStr === 'number') {
+        const d = new Date(dStr);
+        return isNaN(d.getTime()) ? new Date() : d;
+      }
+      let s = String(dStr).trim();
+      if (!s) return new Date();
+
+      const koMatch = s.match(/(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})\.?(?:\s*(오전|오후)\s*(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+      if (koMatch) {
+        let hour = Number(koMatch[5] || 0);
+        const isPm = koMatch[4] === '오후';
+        const isAm = koMatch[4] === '오전';
+        if (isPm && hour < 12) hour += 12;
+        if (isAm && hour === 12) hour = 0;
+        return new Date(
+          Number(koMatch[1]),
+          Number(koMatch[2]) - 1,
+          Number(koMatch[3]),
+          hour,
+          Number(koMatch[6] || 0),
+          Number(koMatch[7] || 0)
+        );
+      }
+
+      const stdMatch = s.match(/(\d{4})[-/.]\s*(\d{1,2})[-/.]\s*(\d{1,2})(?:[T\s]+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+      if (stdMatch) {
+        return new Date(
+          Number(stdMatch[1]),
+          Number(stdMatch[2]) - 1,
+          Number(stdMatch[3]),
+          Number(stdMatch[4] || 0),
+          Number(stdMatch[5] || 0),
+          Number(stdMatch[6] || 0)
+        );
+      }
+
+      const clean = s.replace(/\([^)]*\)/g, '').trim();
+      const parsedClean = new Date(clean);
+      if (!isNaN(parsedClean.getTime())) return parsedClean;
+
+      const parsedDirect = new Date(s);
+      if (!isNaN(parsedDirect.getTime())) return parsedDirect;
+
+      if (/^\d{10,13}$/.test(s)) {
+        const num = Number(s);
+        const parsedNum = new Date(s.length === 10 ? num * 1000 : num);
+        if (!isNaN(parsedNum.getTime())) return parsedNum;
+      }
+
+      return new Date();
+    }
+
+    function getFormattedDate(dayOffset, hour, min) {
+      const d = new Date();
+      d.setDate(d.getDate() + dayOffset);
+      d.setHours(hour, min, 0, 0);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      return `${y}-${m}-${day} ${hh}:${mm}:00`;
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      toast.classList.add('opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 2500);
+    }
+
+    // 탭 전환 핸들러 (상단 탭과 하단 캡슐 독 동시 동기화)
+    function switchTab(tab) {
+      currentTab = tab;
+      const topTabGrowthBtn = document.getElementById('topTabGrowthBtn');
+      const topTabRecordsBtn = document.getElementById('topTabRecordsBtn');
+      const tabGrowthBtn = document.getElementById('tabGrowthBtn');
+      const tabRecordsBtn = document.getElementById('tabRecordsBtn');
+      const viewGrowth = document.getElementById('viewGrowth');
+      const viewRecords = document.getElementById('viewRecords');
+
+      if (tab === 'records') {
+        topTabRecordsBtn.className = 'py-2.5 rounded-full bg-[#18181B] text-white shadow-sm flex items-center justify-center space-x-1.5 transition';
+        topTabGrowthBtn.className = 'py-2.5 rounded-full text-[#71717A] hover:text-[#18181B] flex items-center justify-center space-x-1.5 transition';
+
+        tabRecordsBtn.className = 'w-11 h-11 rounded-full bg-[#18181B] text-white flex items-center justify-center shadow-sm active:scale-95 transition';
+        tabGrowthBtn.className = 'w-11 h-11 rounded-full text-[#71717A] hover:text-[#18181B] flex items-center justify-center active:scale-95 transition';
+
+        viewRecords.classList.remove('hidden');
+        viewGrowth.classList.add('hidden');
+        updateHeaderDate('records');
+        renderFeedActivityCard();
+        renderFeedView();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        topTabGrowthBtn.className = 'py-2.5 rounded-full bg-[#18181B] text-white shadow-sm flex items-center justify-center space-x-1.5 transition';
+        topTabRecordsBtn.className = 'py-2.5 rounded-full text-[#71717A] hover:text-[#18181B] flex items-center justify-center space-x-1.5 transition';
+
+        tabGrowthBtn.className = 'w-11 h-11 rounded-full bg-[#18181B] text-white flex items-center justify-center shadow-sm active:scale-95 transition';
+        tabRecordsBtn.className = 'w-11 h-11 rounded-full text-[#71717A] hover:text-[#18181B] flex items-center justify-center active:scale-95 transition';
+
+        viewGrowth.classList.remove('hidden');
+        viewRecords.classList.add('hidden');
+        updateHeaderDate('growth');
+        renderGrowthView();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    document.getElementById('topTabGrowthBtn').addEventListener('click', () => switchTab('growth'));
+    document.getElementById('topTabRecordsBtn').addEventListener('click', () => switchTab('records'));
+    document.getElementById('tabGrowthBtn').addEventListener('click', () => switchTab('growth'));
+    document.getElementById('tabRecordsBtn').addEventListener('click', () => switchTab('records'));
+
+
+    // 오늘 날짜 상단 헤더 표기 업데이트 (탭별 맞춤 타이틀/서브카피 반영)
+    function updateHeaderDate(tab = currentTab) {
+      const now = new Date();
+      const m = now.getMonth() + 1;
+      const d = now.getDate();
+      const days = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+      const dayName = days[now.getDay()];
+
+      const dateLabel = document.getElementById('headerDateLabel');
+      const titleElem = document.getElementById('headerTitle');
+      const subCopyElem = document.getElementById('headerSubCopy');
+
+      if (tab === 'records') {
+        if (dateLabel) dateLabel.textContent = `${m}월 ${d}일 ${dayName} · 오늘의 움직임`;
+        if (titleElem) titleElem.textContent = '운동 기록';
+        if (subCopyElem) subCopyElem.textContent = '내가 움직인 순간들을 차곡차곡';
+      } else {
+        if (dateLabel) dateLabel.textContent = `${m}월 ${d}일 ${dayName} · 어제보다 한 걸음`;
+        if (titleElem) titleElem.textContent = '나의 성장 스토리';
+        if (subCopyElem) subCopyElem.textContent = '작은 운동이 모여 만드는 나만의 변화';
+      }
+    }
+
+    // 데이터 로드 (구글 시트 자동 동기화)
+    async function loadData(showFeedback = false) {
+      updateHeaderDate();
+
+      const savedGoals = localStorage.getItem(STORAGE_KEY_GOALS);
+      if (savedGoals) {
+        try { userGoals = { ...userGoals, ...JSON.parse(savedGoals) }; } catch (e) {}
+      }
+
+      const local = localStorage.getItem(STORAGE_KEY_RECORDS);
+      if (local) {
+        try {
+          const parsedLocal = JSON.parse(local);
+          records = Array.isArray(parsedLocal)
+            ? parsedLocal.filter(r => !/^rec_([1-9]|1[0-2])$/.test(String(r.id)))
+            : [];
+        } catch {
+          records = [];
+        }
+      }
+      renderAll();
+
+      const gasUrl = getActiveGasUrl();
+      const syncDot = document.getElementById('syncDot');
+      if (gasUrl && gasUrl.trim() !== '') {
+        try {
+          if (syncDot) syncDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 border-2 border-white absolute top-1 right-1 animate-pulse';
+          const resp = await fetch(gasUrl);
+          const data = await resp.json();
+          if (data && data.status === 'success' && Array.isArray(data.records)) {
+            records = data.records;
+            localStorage.setItem(STORAGE_KEY_RECORDS, JSON.stringify(records));
+            renderAll();
+            if (syncDot) syncDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white absolute top-1 right-1';
+            if (showFeedback) showToast('구글 시트와 동기화되었습니다.');
+          }
+        } catch (e) {
+          console.warn('동기화 실패:', e);
+          if (syncDot) syncDot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500 border-2 border-white absolute top-1 right-1';
+          if (showFeedback) showToast('시트 동기화에 실패했습니다.');
+        }
+      }
+    }
+
+    function saveLocal() {
+      localStorage.setItem(STORAGE_KEY_RECORDS, JSON.stringify(records));
+      renderAll();
+    }
+
+    function renderAll() {
+      records.sort((a, b) => parseDate(b.date).getTime() - parseDate(a.date).getTime());
+      renderTopSummaryStats();
+      renderWeeklyCheckins();
+      renderGoalCard();
+      renderGrowthView();
+      renderFeedActivityCard();
+      renderFeedFilterChips();
+      renderFeedView();
+      renderCalendar();
+      updateBackupCount();
+    }
+
+    function formatDurationKorean(totalMin) {
+      const min = Math.max(0, Math.round(totalMin || 0));
+      const h = Math.floor(min / 60);
+      const m = min % 60;
+      if (h > 0) {
+        return m > 0 ? `${h}시간 ${m}분` : `${h}시간`;
+      }
+      return `${m}분`;
+    }
+
+    // ------------------------------------------------------------
+    // 3-1. [성장 탭] 상단 요약 (이번 주 시간, 이번 주 횟수, 현재 연속 일수)
+    // ------------------------------------------------------------
+    function renderTopSummaryStats() {
+      const now = new Date();
+      now.setHours(23, 59, 59, 999);
+      const thisMonday = getMonday(now);
+
+      const weeklyRecords = records.filter(r => parseDate(r.date) >= thisMonday);
+      const totalWeeklySec = weeklyRecords.reduce((s, r) => s + (Number(r.durationSec) || 0), 0);
+      const weeklyMin = Math.round(totalWeeklySec / 60);
+
+      const h = Math.floor(weeklyMin / 60);
+      const m = weeklyMin % 60;
+      const timeStr = h > 0 ? (m > 0 ? `${h}h ${m}m` : `${h}시간`) : `${m}분`;
+      document.getElementById('statActiveTime').textContent = timeStr;
+      document.getElementById('statWorkouts').textContent = `${weeklyRecords.length}회`;
+
+      const activeDates = new Set(records.map(r => {
+        const d = parseDate(r.date);
+        return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+      }));
+      let streak = 0;
+      let checkDate = new Date(now);
+      checkDate.setHours(0, 0, 0, 0);
+      if (!activeDates.has(`${checkDate.getFullYear()}-${checkDate.getMonth()+1}-${checkDate.getDate()}`)) {
+        checkDate.setDate(checkDate.getDate() - 1);
+      }
+      while (activeDates.has(`${checkDate.getFullYear()}-${checkDate.getMonth()+1}-${checkDate.getDate()}`)) {
+        streak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      }
+      document.getElementById('statStreak').textContent = `${streak}일`;
+    }
+
+    // ------------------------------------------------------------
+    // 3-2. [성장 탭] 주간 체크인 7일 캡슐 (터치 시 해당 날짜 기록 탭으로 자동 이동)
+    // ------------------------------------------------------------
+    function renderWeeklyCheckins() {
+      const grid = document.getElementById('weeklyCheckinGrid');
+      const countLabel = document.getElementById('weeklyCheckinCount');
+      if (!grid) return;
+
+      const now = new Date();
+      const dayOfWeek = now.getDay();
+      const sunday = new Date(now);
+      sunday.setDate(now.getDate() - dayOfWeek);
+      sunday.setHours(0, 0, 0, 0);
+
+      const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+      let completedCount = 0;
+      let html = '';
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(sunday);
+        d.setDate(sunday.getDate() + i);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const dayNum = String(d.getDate()).padStart(2, '0');
+        const dateStr = `${y}-${m}-${dayNum}`;
+
+        const isToday = (
+          now.getFullYear() === d.getFullYear() &&
+          now.getMonth() === d.getMonth() &&
+          now.getDate() === d.getDate()
+        );
+
+        const isFuture = d > now;
+
+        const dayRecords = records.filter(r => {
+          if (!r.date) return false;
+          const rd = parseDate(r.date);
+          return (
+            rd.getFullYear() === d.getFullYear() &&
+            rd.getMonth() === d.getMonth() &&
+            rd.getDate() === d.getDate()
+          );
+        });
+
+        const isCompleted = dayRecords.length > 0;
+        if (isCompleted) completedCount++;
+
+        let borderClass = 'border-black/[0.04]';
+        let bgClass = 'bg-[#F8F8FA]';
+        if (isToday) {
+          bgClass = 'bg-white shadow-sm';
+          borderClass = 'border-[#E11D48] ring-1 ring-[#E11D48]';
+        }
+
+        let indicator = '';
+        if (isCompleted) {
+          indicator = `
+            <div class="w-5 h-5 rounded-full bg-[#E11D48] text-white flex items-center justify-center text-[10px] font-black shadow-sm mt-1">
+              ✓
+            </div>
+          `;
+        } else if (isFuture) {
+          indicator = `
+            <div class="w-5 h-5 flex items-center justify-center mt-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#E4E4E7]"></span>
+            </div>
+          `;
+        } else {
+          indicator = `
+            <div class="w-5 h-5 flex items-center justify-center mt-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#D4D4D8]"></span>
+            </div>
+          `;
+        }
+
+        html += `
+          <button type="button" class="py-2 px-0.5 rounded-2xl border ${borderClass} ${bgClass} flex flex-col items-center justify-between text-center transition active:scale-95 cursor-pointer" onclick="handleWeeklyCheckinClick('${dateStr}')">
+            <span class="text-[10px] font-bold ${isToday ? 'text-[#E11D48]' : 'text-[#71717A]'}">${dayNames[i]}</span>
+            <span class="text-xs font-black text-[#111113] my-0.5">${d.getDate()}</span>
+            ${indicator}
+          </button>
+        `;
+      }
+
+      grid.innerHTML = html;
+      if (countLabel) {
+        countLabel.textContent = `이번 주 ${completedCount}일 완료`;
+      }
+    }
+
+    // 주간 체크인 캡슐 터치 시 -> 운동 기록 탭으로 즉시 전환 & 해당 날짜 선택
+    function handleWeeklyCheckinClick(dateStr) {
+      selectedCalendarDate = dateStr;
+      switchTab('records');
+      renderCalendar();
+      renderFeedActivityCard();
+      renderFeedView();
+      showToast(`${dateStr.slice(5, 7)}월 ${dateStr.slice(8, 10)}일 운동 기록으로 이동했습니다.`);
+    }
+
+    // ------------------------------------------------------------
+    // 3-3. [성장 탭] 월간/연간 목표 카드 렌더링
+    // ------------------------------------------------------------
+    function renderGoalCard() {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+
+      const prevMonthDate = new Date(currentYear, currentMonth - 1, 1);
+      const prevYear = prevMonthDate.getFullYear();
+      const prevMonth = prevMonthDate.getMonth();
+
+      const btnMonth = document.getElementById('btnGoalTabMonth');
+      const btnYear = document.getElementById('btnGoalTabYear');
+      const targetSubLabel = document.getElementById('goalTargetSubLabel');
+      const scopeLabel = document.getElementById('goalPeriodScopeLabel');
+      const compareBadge = document.getElementById('goalCompareCountBadge');
+      const compareText = document.getElementById('goalCompareCountText');
+      const totalDurText = document.getElementById('goalTotalDurationText');
+
+      const curMonthRecords = records.filter(r => {
+        if (!r.date) return false;
+        const d = parseDate(r.date);
+        return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
+      });
+      const curMonthCount = curMonthRecords.length;
+      const curMonthSec = curMonthRecords.reduce((s, r) => s + (Number(r.durationSec) || 0), 0);
+      const curMonthMin = Math.round(curMonthSec / 60);
+
+      const prevMonthRecords = records.filter(r => {
+        if (!r.date) return false;
+        const d = parseDate(r.date);
+        return d.getFullYear() === prevYear && d.getMonth() === prevMonth;
+      });
+      const prevMonthCount = prevMonthRecords.length;
+      const prevMonthSec = prevMonthRecords.reduce((s, r) => s + (Number(r.durationSec) || 0), 0);
+      const prevMonthMin = Math.round(prevMonthSec / 60);
+
+      const curYearRecords = records.filter(r => {
+        if (!r.date) return false;
+        const d = parseDate(r.date);
+        return d.getFullYear() === currentYear;
+      });
+      const curYearCount = curYearRecords.length;
+      const curYearSec = curYearRecords.reduce((s, r) => s + (Number(r.durationSec) || 0), 0);
+      const curYearMin = Math.round(curYearSec / 60);
+
+      const prevYearRecords = records.filter(r => {
+        if (!r.date) return false;
+        const d = parseDate(r.date);
+        return d.getFullYear() === currentYear - 1;
+      });
+      const prevYearCount = prevYearRecords.length;
+      const prevYearSec = prevYearRecords.reduce((s, r) => s + (Number(r.durationSec) || 0), 0);
+      const prevYearMin = Math.round(prevYearSec / 60);
+
+      let currentCount = 0;
+      let targetCount = 12;
+      let rewardText = '';
+
+      if (currentGoalType === 'month') {
+        btnMonth.className = 'px-3 py-1.5 rounded-lg bg-white text-[#18181B] shadow-sm whitespace-nowrap transition flex items-center space-x-1.5';
+        btnYear.className = 'px-3 py-1.5 rounded-lg text-[#A1A1AA] hover:text-white whitespace-nowrap transition flex items-center space-x-1.5';
+        targetSubLabel.textContent = `${currentMonth + 1}월 운동 목표`;
+        scopeLabel.textContent = '이번 달 달성 히스토리 ▸';
+
+        currentCount = curMonthCount;
+        targetCount = Number(userGoals.monthCount) || 12;
+        rewardText = userGoals.monthReward || '치팅데이 맛있는 치킨 먹기';
+
+        const diffCount = curMonthCount - prevMonthCount;
+        const diffMin = curMonthMin - prevMonthMin;
+
+        if (diffCount > 0) {
+          compareText.textContent = `지난달(${prevMonthCount}회) 대비 +${diffCount}회 ↗`;
+          compareBadge.className = 'text-xs px-2.5 py-1 rounded-full font-bold bg-[#27272A] text-[#FDA4AF] border border-white/10 inline-flex items-center space-x-1';
+        } else if (diffCount < 0) {
+          compareText.textContent = `지난달(${prevMonthCount}회) 대비 ${diffCount}회 ↘`;
+          compareBadge.className = 'text-xs px-2.5 py-1 rounded-full font-bold bg-[#27272A] text-[#E4E4E7] border border-white/10 inline-flex items-center space-x-1';
+        } else {
+          compareText.textContent = `지난달과 동일 (${curMonthCount}회)`;
+          compareBadge.className = 'text-xs px-2.5 py-1 rounded-full font-bold bg-[#27272A] text-[#A1A1AA] border border-white/10 inline-flex items-center space-x-1';
+        }
+
+        const sign = diffMin >= 0 ? '+' : '';
+        totalDurText.textContent = `총 ${formatDurationKorean(curMonthMin)} (${sign}${diffMin}분 ${diffMin >= 0 ? '↗' : '↘'})`;
+
+      } else {
+        btnYear.className = 'px-3 py-1.5 rounded-lg bg-white text-[#18181B] shadow-sm whitespace-nowrap transition flex items-center space-x-1.5';
+        btnMonth.className = 'px-3 py-1.5 rounded-lg text-[#A1A1AA] hover:text-white whitespace-nowrap transition flex items-center space-x-1.5';
+        targetSubLabel.textContent = `${currentYear}년 연간 목표`;
+        scopeLabel.textContent = '올해 달성 히스토리 ▸';
+
+        currentCount = curYearCount;
+        targetCount = Number(userGoals.yearCount) || 120;
+        rewardText = userGoals.yearReward || '제주도 힐링 여행';
+
+        const diffCountYear = curYearCount - prevYearCount;
+        const diffMinYear = curYearMin - prevYearMin;
+
+        if (diffCountYear >= 0) {
+          compareText.textContent = `작년(${prevYearCount}회) 대비 +${diffCountYear}회 ↗`;
+          compareBadge.className = 'text-xs px-2.5 py-1 rounded-full font-bold bg-[#27272A] text-[#FDA4AF] border border-white/10 inline-flex items-center space-x-1';
+        } else {
+          compareText.textContent = `작년(${prevYearCount}회) 대비 ${diffCountYear}회 ↘`;
+          compareBadge.className = 'text-xs px-2.5 py-1 rounded-full font-bold bg-[#27272A] text-[#E4E4E7] border border-white/10 inline-flex items-center space-x-1';
+        }
+
+        const diffHour = Math.round(diffMinYear / 60);
+        const signH = diffHour >= 0 ? '+' : '';
+        totalDurText.textContent = `올해 총 ${formatDurationKorean(curYearMin)} (${signH}${diffHour}시간 ${diffHour >= 0 ? '↗' : '↘'})`;
+      }
+
+      const percent = Math.min(100, Math.round((currentCount / targetCount) * 100));
+
+      document.getElementById('goalCurrentCount').textContent = currentCount;
+      document.getElementById('goalTargetCount').textContent = targetCount;
+      document.getElementById('goalPercentText').textContent = `${percent}%`;
+      document.getElementById('goalProgressBar').style.width = `${percent}%`;
+
+      const remaining = targetCount - currentCount;
+      const remainingElem = document.getElementById('goalRemainingText');
+      const rewardContainer = document.getElementById('goalRewardContainer');
+      const rewardIcon = document.getElementById('goalRewardIcon');
+      const rewardLabel = document.getElementById('goalRewardLabel');
+      const rewardElem = document.getElementById('goalRewardText');
+
+      rewardElem.textContent = rewardText;
+
+      if (remaining <= 0) {
+        remainingElem.innerHTML = `<span class="text-[#FDA4AF] font-black">목표 100% 완주 성공! (${currentCount}회 달성)</span>`;
+        rewardContainer.className = 'p-3.5 rounded-2xl bg-[#BE123C]/30 border border-[#E11D48] flex items-center space-x-2.5 reward-gold-glow';
+        rewardIcon.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>`;
+        rewardIcon.className = 'w-8 h-8 rounded-xl bg-[#E11D48] text-white flex items-center justify-center font-black shadow-md flex-shrink-0';
+        rewardLabel.textContent = '축하합니다! 획득한 보상';
+        rewardLabel.className = 'text-xs font-black text-[#FDA4AF] block';
+      } else {
+        remainingElem.textContent = `앞으로 ${remaining}회 더 운동하면 달성!`;
+        rewardContainer.className = 'p-3 rounded-2xl bg-[#27272A]/80 border border-white/10 flex items-center space-x-2.5';
+        rewardIcon.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path></svg>`;
+        rewardIcon.className = 'w-8 h-8 rounded-xl bg-[#18181B] text-[#E11D48] flex items-center justify-center shadow-sm flex-shrink-0';
+        rewardLabel.textContent = '목표 달성 시 보상';
+        rewardLabel.className = 'text-xs font-bold text-[#A1A1AA] block';
+      }
+    }
+
+    document.getElementById('btnGoalTabMonth').addEventListener('click', () => {
+      currentGoalType = 'month';
+      renderGoalCard();
+    });
+
+    document.getElementById('btnGoalTabYear').addEventListener('click', () => {
+      currentGoalType = 'year';
+      renderGoalCard();
+    });
+
+    function openGoalHistoryModal() {
+      const list = document.getElementById('goalHistoryList');
+      list.innerHTML = '';
+
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+      const historyItems = [];
+
+      for (let i = 0; i < 6; i++) {
+        const d = new Date(currentYear, currentMonth - i, 1);
+        const y = d.getFullYear();
+        const m = d.getMonth();
+        const monthKey = `${y}년 ${m + 1}월`;
+
+        const monthRecs = records.filter(r => {
+          if (!r.date) return false;
+          const rd = parseDate(r.date);
+          return rd.getFullYear() === y && rd.getMonth() === m;
+        });
+        const count = monthRecs.length;
+        const totalSec = monthRecs.reduce((s, r) => s + (Number(r.durationSec) || 0), 0);
+        const totalMin = Math.round(totalSec / 60);
+
+        const target = Number(userGoals.monthCount) || 12;
+        const isPassed = count >= target;
+        const isCurrent = i === 0;
+
+        historyItems.push({
+          title: monthKey,
+          isCurrent,
+          count,
+          totalMin,
+          target,
+          isPassed,
+          reward: userGoals.monthReward
+        });
+      }
+
+      list.innerHTML = historyItems.map(item => `
+        <div class="p-3.5 rounded-2xl border ${item.isPassed ? 'bg-[#FFF1F2] border-[#FFE4E6]' : 'bg-[#F8F8FA] border-black/[0.04]'} flex items-center justify-between">
+          <div>
+            <div class="flex items-center space-x-1.5">
+              <span class="text-xs font-black text-[#111113]">${item.title}</span>
+              ${item.isCurrent ? '<span class="text-xs px-2 py-0.5 rounded-full bg-[#18181B] text-white font-bold">진행 중</span>' : ''}
+              ${item.isPassed ? '<span class="text-xs px-2 py-0.5 rounded-full bg-[#E11D48] text-white font-bold">달성 완료</span>' : ''}
+            </div>
+            <p class="text-xs text-[#71717A] mt-1 font-semibold">
+              운동 <span class="font-bold text-[#111113]">${item.count}회</span> · 총 <span class="font-bold text-[#E11D48]">${formatDurationKorean(item.totalMin)}</span> (목표 ${item.target}회)
+              ${item.isPassed ? `<span class="block text-xs text-[#E11D48] font-bold mt-0.5">보상: ${escapeHtml(item.reward)}</span>` : ''}
+            </p>
+          </div>
+          <div class="text-right">
+            <span class="text-sm font-black ${item.isPassed ? 'text-[#E11D48]' : 'text-[#71717A]'}">
+              ${Math.round((item.count / item.target) * 100)}%
+            </span>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('goalHistoryModal').classList.remove('hidden');
+    }
+
+    document.getElementById('goalProgressTrigger').addEventListener('click', openGoalHistoryModal);
+    document.getElementById('btnCloseGoalHistoryModal').addEventListener('click', () => document.getElementById('goalHistoryModal').classList.add('hidden'));
+    document.getElementById('btnCloseGoalHistoryBtn').addEventListener('click', () => document.getElementById('goalHistoryModal').classList.add('hidden'));
+
+    // ------------------------------------------------------------
+    // 3-4 & 3-5. [성장 탭] 최근 기간 변화 및 성장 레코드 통합 렌더링
+    // ------------------------------------------------------------
+    function getFilteredRecords(period) {
+      const now = new Date();
+      now.setHours(23, 59, 59, 999);
+      if (period === '1w') {
+        const d = new Date(now);
+        d.setDate(d.getDate() - 6);
+        d.setHours(0, 0, 0, 0);
+        return records.filter(r => parseDate(r.date) >= d);
+      }
+      if (period === '4w') {
+        const d = new Date(now);
+        d.setDate(d.getDate() - 27);
+        d.setHours(0, 0, 0, 0);
+        return records.filter(r => parseDate(r.date) >= d);
+      }
+      return [...records];
+    }
+
+    function getPreviousRecords(period) {
+      const now = new Date();
+      now.setHours(23, 59, 59, 999);
+      if (period === '1w') {
+        const end = new Date(now);
+        end.setDate(end.getDate() - 6);
+        end.setHours(0, 0, 0, 0);
+        const start = new Date(end);
+        start.setDate(start.getDate() - 7);
+        return records.filter(r => { const rd = parseDate(r.date); return rd >= start && rd < end; });
+      }
+      if (period === '4w') {
+        const end = new Date(now);
+        end.setDate(end.getDate() - 27);
+        end.setHours(0, 0, 0, 0);
+        const start = new Date(end);
+        start.setDate(start.getDate() - 28);
+        return records.filter(r => { const rd = parseDate(r.date); return rd >= start && rd < end; });
+      }
+      return [];
+    }
+
+    function renderGrowthView() {
+      const curList = getFilteredRecords(currentPeriod);
+      const prevList = getPreviousRecords(currentPeriod);
+
+      const periodBadge = document.getElementById('recordPeriodBadge');
+      if (currentPeriod === '1w') periodBadge.textContent = '최근 1주 기준';
+      else if (currentPeriod === '4w') periodBadge.textContent = '최근 4주 기준';
+      else periodBadge.textContent = '전체 누적 기준';
+
+      const curSec = curList.reduce((s, r) => s + (Number(r.durationSec) || 0), 0);
+      const prevSec = prevList.reduce((s, r) => s + (Number(r.durationSec) || 0), 0);
+      const curMin = Math.round(curSec / 60);
+      const prevMin = Math.round(prevSec / 60);
+      const diffMin = curMin - prevMin;
+      const countDiff = curList.length - prevList.length;
+
+      document.getElementById('growthBannerPeriodLabel').textContent = currentPeriod === '1w' ? '최근 1주의 변화' : (currentPeriod === '4w' ? '최근 4주의 변화' : '전체 기간 누적 변화');
+      
+      const compareCountDetail = document.getElementById('compareCountDetail');
+      const compareCountDiffBadge = document.getElementById('compareCountDiffBadge');
+      const compareDurationDetail = document.getElementById('compareDurationDetail');
+      const compareDurationDiffBadge = document.getElementById('compareDurationDiffBadge');
+
+      if (curList.length === 0) {
+        document.getElementById('growthHighlightText').textContent = '해당 기간 운동 기록이 없어.';
+        document.getElementById('growthCompareSub').textContent = '새로운 운동을 시작해봐!';
+        compareCountDetail.textContent = '0회';
+        compareCountDiffBadge.textContent = '0회';
+        compareCountDiffBadge.className = 'text-xs font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700';
+        compareDurationDetail.textContent = '0분';
+        compareDurationDiffBadge.textContent = '0분';
+        compareDurationDiffBadge.className = 'text-xs font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700';
+      } else if (currentPeriod === 'all') {
+        document.getElementById('growthHighlightText').textContent = `총 ${formatDurationKorean(curMin)}의 운동을 차곡차곡 쌓았어.`;
+        document.getElementById('growthCompareSub').textContent = `누적 ${curList.length}회 완료 • 지속하는 힘`;
+        compareCountDetail.textContent = `누적 ${curList.length}회`;
+        compareCountDiffBadge.textContent = '누적';
+        compareCountDiffBadge.className = 'text-xs font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700';
+        compareDurationDetail.textContent = `총 ${formatDurationKorean(curMin)}`;
+        compareDurationDiffBadge.textContent = '완료';
+        compareDurationDiffBadge.className = 'text-xs font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800';
+      } else {
+        document.getElementById('growthHighlightText').textContent = diffMin >= 0 ? `이전보다 ${diffMin}분 더 운동했어.` : `이전보다 ${Math.abs(diffMin)}분 적게 운동했어.`;
+        document.getElementById('growthCompareSub').textContent = `${prevMin}분 → ${curMin}분 • ${prevList.length}회 → ${curList.length}회`;
+        
+        compareCountDetail.textContent = `${prevList.length}회 → ${curList.length}회`;
+        compareCountDiffBadge.textContent = `${countDiff >= 0 ? '+' : ''}${countDiff}회 ${countDiff >= 0 ? '↗' : '↘'}`;
+        compareCountDiffBadge.className = `text-xs font-extrabold px-2 py-0.5 rounded-full ${countDiff >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'}`;
+
+        compareDurationDetail.textContent = `${prevMin}분 → ${curMin}분`;
+        compareDurationDiffBadge.textContent = `${diffMin >= 0 ? '+' : ''}${diffMin}분 ${diffMin >= 0 ? '↗' : '↘'}`;
+        compareDurationDiffBadge.className = `text-xs font-extrabold px-2 py-0.5 rounded-full ${diffMin >= 0 ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-700'}`;
+      }
+
+      // 4분할 지표
+      const curH = Math.floor(curSec / 3600);
+      const curM = Math.round((curSec % 3600) / 60);
+      document.getElementById('growthTotalDuration').textContent = curH > 0 ? `${curH}시간 ${curM}분` : `${curM}분`;
+      document.getElementById('growthDurationCompare').textContent = currentPeriod === 'all' ? `총 ${curMin}분 누적` : `이전 대비 ${diffMin >= 0 ? '+' : ''}${diffMin}분`;
+
+      document.getElementById('growthTotalCount').innerHTML = `${curList.length}<span class="text-xs font-bold text-[#71717A] ml-0.5">회</span>`;
+      document.getElementById('growthCountCompare').textContent = currentPeriod === 'all' ? `총 ${curList.length}회` : `이전 대비 ${countDiff >= 0 ? '+' : ''}${countDiff}회`;
+
+      const avgDurationMin = curList.length > 0 ? Math.round(curMin / curList.length) : 0;
+      document.getElementById('growthAvgDuration').innerHTML = `${avgDurationMin}<span class="text-xs font-bold text-[#71717A] ml-0.5">분</span>`;
+      const totalRounds = curList.reduce((s, r) => s + (Number(r.rounds) || 0), 0);
+      const avgRounds = curList.length > 0 ? (totalRounds / curList.length).toFixed(1) : '0';
+      document.getElementById('growthAvgRoundsSub').textContent = `회당 평균 • ${avgRounds}R`;
+
+      const counts = {};
+      curList.forEach(r => { counts[r.type] = (counts[r.type] || 0) + 1; });
+      let fav = '기록 없음', maxC = 0;
+      for (const [k, v] of Object.entries(counts)) { if (v > maxC) { maxC = v; fav = k; } }
+      const ratio = curList.length > 0 ? Math.round((maxC / curList.length) * 100) : 0;
+      document.getElementById('growthFavType').textContent = fav;
+      document.getElementById('growthFavRatio').textContent = `전체 운동의 ${ratio}%`;
+      const favIconElem = document.getElementById('growthFavIcon');
+      favIconElem.className = getTypeColorClass(fav);
+      favIconElem.innerHTML = getTypeIconSvg(fav, 'w-4 h-4');
+
+      renderLineChart(curList);
+      renderDynamicBarChart();
+      renderBalanceBar(curList);
+    }
+
+    function getMonday(d) {
+      const date = new Date(d);
+      const day = date.getDay();
+      const diff = (day + 6) % 7;
+      date.setDate(date.getDate() - diff);
+      date.setHours(0, 0, 0, 0);
+      return date;
+    }
+
+    function renderLineChart(curList) {
+      const chartList = [...curList].reverse();
+      const svg = document.getElementById('svgGrowthChart');
+      svg.innerHTML = '';
+
+      document.getElementById('chartDurationTitle').textContent = '시간 추이';
+
+      if (chartList.length === 0) {
+        document.getElementById('growthChartAvgDuration').textContent = '기록 없음';
+        svg.innerHTML = `<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#71717A" font-size="12" font-weight="600">해당 기간 운동 기록이 없습니다.</text>`;
+        return;
+      }
+
+      const durations = chartList.map(r => Math.round((Number(r.durationSec) || 0) / 60));
+      const avgDur = Math.round(durations.reduce((a, b) => a + b, 0) / durations.length);
+      document.getElementById('growthChartAvgDuration').textContent = `평균 ${avgDur}분`;
+
+      const maxVal = Math.max(...durations);
+      const maxIdx = durations.lastIndexOf(maxVal);
+      const maxD = Math.max(maxVal, 30);
+      const minD = Math.max(0, Math.min(...durations) - 5);
+      const w = 340, h = 112;
+      const topPad = 20, bottomPad = 22;
+      const chartH = h - topPad - bottomPad;
+      svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+
+      const avgY = topPad + chartH - ((avgDur - minD) / Math.max(1, maxD - minD)) * chartH;
+      svg.innerHTML += `<line x1="8" y1="${avgY}" x2="${w - 8}" y2="${avgY}" stroke="#D4D4D8" stroke-dasharray="4,3" stroke-width="1.2" />`;
+
+      const points = durations.map((val, idx) => {
+        const x = chartList.length === 1 ? w / 2 : 14 + ((w - 28) / Math.max(1, durations.length - 1)) * idx;
+        const y = topPad + chartH - ((val - minD) / Math.max(1, maxD - minD)) * chartH;
+        return { x, y, val, idx, item: chartList[idx] };
+      });
+
+      const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+      svg.innerHTML += `<path d="${pathD}" fill="none" stroke="#E11D48" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />`;
+
+      const firstDateObj = parseDate(chartList[0].date);
+      const lastDateObj = parseDate(chartList[chartList.length - 1].date);
+      const firstDateLabel = `${firstDateObj.getMonth() + 1}/${firstDateObj.getDate()}`;
+      const lastDateLabel = `${lastDateObj.getMonth() + 1}/${lastDateObj.getDate()}`;
+      if (chartList.length === 1) {
+        svg.innerHTML += `<text x="${w / 2}" y="${h - 4}" text-anchor="middle" fill="#71717A" font-size="11" font-weight="700">${firstDateLabel}</text>`;
+      } else {
+        svg.innerHTML += `<text x="14" y="${h - 4}" text-anchor="start" fill="#71717A" font-size="11" font-weight="700">${firstDateLabel}</text>`;
+        svg.innerHTML += `<text x="${w - 14}" y="${h - 4}" text-anchor="end" fill="#71717A" font-size="11" font-weight="700">${lastDateLabel}</text>`;
+      }
+
+      points.forEach((p, idx) => {
+        const isFirst = idx === 0;
+        const isLast = idx === points.length - 1;
+        const isMax = idx === maxIdx;
+        const r = (isLast || isMax) ? 5 : 4;
+        const fill = isMax ? '#18181B' : '#E11D48';
+        svg.innerHTML += `
+          <circle cx="${p.x}" cy="${p.y}" r="${r}" fill="${fill}" stroke="#ffffff" stroke-width="2" class="cursor-pointer transition" onclick="showDotInfo('${p.item.date}', '${p.val}분', '${escapeHtml(p.item.type)}')">
+            <title>${p.item.date.slice(5, 10)}: ${p.val}분</title>
+          </circle>
+        `;
+        if (isFirst || isLast || isMax) {
+          const anchor = isFirst && points.length > 1 ? 'start' : (isLast && points.length > 1 ? 'end' : 'middle');
+          const labelX = isFirst && points.length > 1 ? Math.max(8, p.x - 4) : (isLast && points.length > 1 ? Math.min(w - 8, p.x + 4) : p.x);
+          svg.innerHTML += `<text x="${labelX}" y="${Math.max(11, p.y - 8)}" text-anchor="${anchor}" fill="#111113" font-size="11" font-weight="800">${p.val}분</text>`;
+        }
+      });
+    }
+
+    function renderDynamicBarChart() {
+      const container = document.getElementById('growthBarContainer');
+      const titleElem = document.getElementById('barFrequencyTitle');
+      const unitElem = document.getElementById('barFrequencyUnit');
+      const avgElem = document.getElementById('growthWeeklyAvgText');
+      container.innerHTML = '';
+
+      titleElem.textContent = '운동 빈도';
+      const now = new Date();
+
+      if (currentPeriod === '1w') {
+        unitElem.textContent = '(요일별)';
+        const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+        const dayBuckets = [];
+
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date(now);
+          d.setDate(d.getDate() - i);
+          d.setHours(0, 0, 0, 0);
+          const nextD = new Date(d);
+          nextD.setDate(d.getDate() + 1);
+
+          const bucketRecords = records.filter(r => {
+            const rd = parseDate(r.date);
+            return rd >= d && rd < nextD;
+          });
+          const count = bucketRecords.length;
+          const durationSec = bucketRecords.reduce((s, r) => s + (Number(r.durationSec) || 0), 0);
+          const durationMin = Math.round(durationSec / 60);
+
+          const isToday = i === 0;
+          dayBuckets.push({
+            label: isToday ? '오늘' : dayNames[d.getDay()],
+            count,
+            durationMin,
+            isCurrent: isToday
+          });
+        }
+
+        const totalC = dayBuckets.reduce((s, b) => s + b.count, 0);
+        const totalMin = dayBuckets.reduce((s, b) => s + b.durationMin, 0);
+        avgElem.textContent = `7일간 총 ${totalC}회 · ${formatDurationKorean(totalMin)}`;
+
+        const maxC = Math.max(...dayBuckets.map(b => b.count), 1);
+        container.innerHTML = dayBuckets.map(b => {
+          const heightPx = Math.max(6, Math.round((b.count / Math.max(maxC, 2)) * 44));
+          const color = b.count > 0 ? (b.isCurrent ? 'bg-[#E11D48]' : 'bg-[#18181B]') : 'bg-[#E4E4E7]';
+          return `
+            <div class="flex flex-col items-center space-y-0.5 flex-1">
+              <span class="text-xs font-black ${b.count > 0 ? 'text-[#111113]' : 'text-[#A1A1AA]'} leading-tight">${b.count}회</span>
+              <span class="text-[10px] font-bold ${b.durationMin > 0 ? 'text-[#E11D48]' : 'text-[#D4D4D8]'} leading-tight">${b.durationMin}분</span>
+              <div class="w-5 rounded-full ${color} transition-all duration-500 mt-1" style="height: ${heightPx}px;"></div>
+              <span class="text-xs ${b.isCurrent ? 'font-black text-[#E11D48]' : 'font-semibold text-[#71717A]'} pt-0.5">${b.label}</span>
+            </div>
+          `;
+        }).join('');
+
+      } else if (currentPeriod === '4w') {
+        unitElem.textContent = '(주차별)';
+        const thisMonday = getMonday(now);
+        const weekBuckets = [
+          { label: '3주 전', start: new Date(thisMonday.getTime() - 21 * 86400000), count: 0, durationMin: 0 },
+          { label: '2주 전', start: new Date(thisMonday.getTime() - 14 * 86400000), count: 0, durationMin: 0 },
+          { label: '지난주', start: new Date(thisMonday.getTime() - 7 * 86400000), count: 0, durationMin: 0 },
+          { label: '이번 주', start: new Date(thisMonday.getTime()), count: 0, durationMin: 0 }
+        ];
+
+        weekBuckets.forEach(b => {
+          const nextWeek = new Date(b.start.getTime() + 7 * 86400000);
+          const bucketRecords = records.filter(r => {
+            const rd = parseDate(r.date);
+            return rd >= b.start && rd < nextWeek;
+          });
+          b.count = bucketRecords.length;
+          b.durationMin = Math.round(bucketRecords.reduce((s, r) => s + (Number(r.durationSec) || 0), 0) / 60);
+        });
+
+        const totalC = weekBuckets.reduce((s, b) => s + b.count, 0);
+        const totalMin = weekBuckets.reduce((s, b) => s + b.durationMin, 0);
+        avgElem.textContent = `주 평균 ${(totalC / 4).toFixed(1)}회 · ${Math.round(totalMin / 4)}분`;
+
+        const maxC = Math.max(...weekBuckets.map(b => b.count), 1);
+        container.innerHTML = weekBuckets.map((b, idx) => {
+          const isCurrent = idx === 3;
+          const heightPx = Math.max(8, Math.round((b.count / Math.max(maxC, 4)) * 36));
+          const color = isCurrent ? 'bg-[#E11D48]' : 'bg-[#18181B]';
+
+          return `
+            <div class="flex flex-col items-center space-y-0.5 flex-1">
+              <span class="text-xs font-black ${isCurrent ? 'text-[#E11D48]' : (b.count > 0 ? 'text-[#111113]' : 'text-[#A1A1AA]')} leading-tight">${b.count}회</span>
+              <span class="text-[10px] font-bold ${b.durationMin > 0 ? 'text-[#E11D48]' : 'text-[#D4D4D8]'} leading-tight">${b.durationMin}분</span>
+              <div class="w-6 rounded-full ${color} transition-all duration-500 mt-1" style="height: ${heightPx}px;"></div>
+              <span class="text-xs ${isCurrent ? 'font-black text-[#E11D48]' : 'font-semibold text-[#71717A]'} pt-0.5">${b.label}</span>
+            </div>
+          `;
+        }).join('');
+
+      } else {
+        unitElem.textContent = '(월별)';
+        const monthBuckets = [];
+        const curY = now.getFullYear();
+        const curM = now.getMonth();
+
+        for (let i = 4; i >= 0; i--) {
+          const d = new Date(curY, curM - i, 1);
+          const y = d.getFullYear();
+          const m = d.getMonth();
+          const nextM = new Date(y, m + 1, 1);
+
+          const bucketRecords = records.filter(r => {
+            const rd = parseDate(r.date);
+            return rd >= d && rd < nextM;
+          });
+          const count = bucketRecords.length;
+          const durationMin = Math.round(bucketRecords.reduce((s, r) => s + (Number(r.durationSec) || 0), 0) / 60);
+
+          monthBuckets.push({
+            label: `${m + 1}월`,
+            count,
+            durationMin,
+            isCurrent: i === 0
+          });
+        }
+
+        const totalC = monthBuckets.reduce((s, b) => s + b.count, 0);
+        const totalMin = monthBuckets.reduce((s, b) => s + b.durationMin, 0);
+        avgElem.textContent = `월 평균 ${(totalC / 5).toFixed(1)}회 · ${Math.round(totalMin / 5)}분`;
+
+        const maxC = Math.max(...monthBuckets.map(b => b.count), 1);
+        container.innerHTML = monthBuckets.map(b => {
+          const heightPx = Math.max(8, Math.round((b.count / Math.max(maxC, 6)) * 36));
+          const color = b.isCurrent ? 'bg-[#E11D48]' : 'bg-[#18181B]';
+
+          return `
+            <div class="flex flex-col items-center space-y-0.5 flex-1">
+              <span class="text-xs font-black ${b.isCurrent ? 'text-[#E11D48]' : (b.count > 0 ? 'text-[#111113]' : 'text-[#A1A1AA]')} leading-tight">${b.count}회</span>
+              <span class="text-[10px] font-bold ${b.durationMin > 0 ? 'text-[#E11D48]' : 'text-[#D4D4D8]'} leading-tight">${b.durationMin}분</span>
+              <div class="w-6 rounded-full ${color} transition-all duration-500 mt-1" style="height: ${heightPx}px;"></div>
+              <span class="text-xs ${b.isCurrent ? 'font-black text-[#E11D48]' : 'font-semibold text-[#71717A]'} pt-0.5">${b.label}</span>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function renderBalanceBar(list) {
+      const container = document.getElementById('balanceProgressBar');
+      const legend = document.getElementById('balanceLegend');
+      const sub = document.getElementById('growthBalanceSub');
+      const total = list.length;
+
+      if (total === 0) {
+        container.innerHTML = '<div style="width: 100%" class="bg-[#E4E4E7] h-full"></div>';
+        legend.innerHTML = '<span class="text-xs text-[#71717A]">운동 기록이 없습니다.</span>';
+        sub.textContent = '총 0회 기록 분석';
+        return;
+      }
+
+      const typeCounts = {};
+      list.forEach(r => {
+        let t = String(r.type || '').trim();
+        if (!t) t = '기타';
+        typeCounts[t] = (typeCounts[t] || 0) + 1;
+      });
+
+      const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
+
+      const palette = [
+        { bg: 'bg-[#E11D48]', hex: '#E11D48' },
+        { bg: 'bg-[#18181B]', hex: '#18181B' },
+        { bg: 'bg-[#64748B]', hex: '#64748B' },
+        { bg: 'bg-[#059669]', hex: '#059669' },
+        { bg: 'bg-[#D97706]', hex: '#D97706' },
+        { bg: 'bg-[#4F46E5]', hex: '#4F46E5' },
+        { bg: 'bg-[#DB2777]', hex: '#DB2777' }
+      ];
+
+      let displayGroups = [];
+      if (sortedTypes.length <= 5) {
+        displayGroups = sortedTypes.map(([name, count], idx) => ({
+          name,
+          count,
+          pct: Math.round((count / total) * 100),
+          color: palette[idx % palette.length]
+        }));
+      } else {
+        const top4 = sortedTypes.slice(0, 4);
+        const rest = sortedTypes.slice(4);
+        displayGroups = top4.map(([name, count], idx) => ({
+          name,
+          count,
+          pct: Math.round((count / total) * 100),
+          color: palette[idx % palette.length]
+        }));
+        const restCount = rest.reduce((s, [, c]) => s + c, 0);
+        displayGroups.push({
+          name: '기타 (' + rest.length + '개)',
+          count: restCount,
+          pct: Math.round((restCount / total) * 100),
+          color: palette[4]
+        });
+      }
+
+      let sumPct = displayGroups.reduce((s, g) => s + g.pct, 0);
+      if (sumPct !== 100 && displayGroups.length > 0) {
+        displayGroups[0].pct += (100 - sumPct);
+      }
+
+      container.innerHTML = displayGroups.map(g => `
+        <div style="width: ${Math.max(0, g.pct)}%" class="${g.color.bg} h-full transition-all duration-500" title="${escapeHtml(g.name)}: ${g.pct}% (${g.count}회)"></div>
+      `).join('');
+
+      legend.innerHTML = displayGroups.map(g => `
+        <span class="flex items-center space-x-1.5 whitespace-nowrap">
+          <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: ${g.color.hex}"></span>
+          <span class="text-xs font-semibold text-[#71717A]">${escapeHtml(g.name)} <span class="font-bold text-[#111113]">${g.pct}%</span></span>
+        </span>
+      `).join('');
+
+      sub.textContent = `총 ${total}회 기록 분석 (${sortedTypes.length}개 종목)`;
+    }
+
+    // ------------------------------------------------------------
+    // 4-1. [운동 기록 상단] 활동 분석 대시보드 (3중 동심원 링 차트 & 볼륨 차트)
+    // ------------------------------------------------------------
+    function renderFeedActivityCard() {
+      const chartTitle = document.getElementById('feedChartTitle');
+      const barContainer = document.getElementById('feedVolumeBarContainer');
+      const metric1Label = document.getElementById('feedMetric1Label');
+      const metric1Val = document.getElementById('feedMetric1Val');
+      const metric2Label = document.getElementById('feedMetric2Label');
+      const metric2Val = document.getElementById('feedMetric2Val');
+      if (!barContainer) return;
+
+      const now = new Date();
+      barContainer.innerHTML = '';
+
+      function updateRings({
+        subtitle,
+        badge,
+        pctTime, valTimeText, subTimeText, labelTimeText,
+        pctDays, valDaysText, subDaysText, labelDaysText,
+        pctFreq, valFreqText, subFreqText, labelFreqText
+      }) {
+        const subElem = document.getElementById('feedRingsPeriodSubtitle');
+        const badgeElem = document.getElementById('feedRingsPeriodBadge');
+        if (subElem) subElem.textContent = subtitle;
+        if (badgeElem) badgeElem.textContent = badge;
+
+        const arcTime = document.getElementById('ringArcTime');
+        const arcDays = document.getElementById('ringArcDays');
+        const arcFreq = document.getElementById('ringArcFreq');
+
+        const cTime = 301.6;
+        const cDays = 219.9;
+        const cFreq = 138.2;
+
+        if (arcTime) {
+          const clampedTime = Math.max(0, Math.min(100, pctTime));
+          arcTime.style.strokeDashoffset = cTime * (1 - clampedTime / 100);
+        }
+        if (arcDays) {
+          const clampedDays = Math.max(0, Math.min(100, pctDays));
+          arcDays.style.strokeDashoffset = cDays * (1 - clampedDays / 100);
+        }
+        if (arcFreq) {
+          const clampedFreq = Math.max(0, Math.min(100, pctFreq));
+          arcFreq.style.strokeDashoffset = cFreq * (1 - clampedFreq / 100);
+          arcFreq.style.stroke = 'rgba(0, 0, 0, 0.30)';
+        }
+
+        const v1 = document.getElementById('ringLegendVal1');
+        const s1 = document.getElementById('ringLegendSub1');
+        const l1 = document.getElementById('ringLegendLabel1');
+        if (v1) v1.textContent = valTimeText;
+        if (s1) s1.textContent = subTimeText;
+        if (l1) l1.textContent = labelTimeText;
+
+        const v2 = document.getElementById('ringLegendVal2');
+        const s2 = document.getElementById('ringLegendSub2');
+        const l2 = document.getElementById('ringLegendLabel2');
+        if (v2) v2.textContent = valDaysText;
+        if (s2) s2.textContent = subDaysText;
+        if (l2) l2.textContent = labelDaysText;
+
+        const v3 = document.getElementById('ringLegendVal3');
+        const s3 = document.getElementById('ringLegendSub3');
+        const l3 = document.getElementById('ringLegendLabel3');
+        if (v3) v3.textContent = valFreqText;
+        if (s3) s3.textContent = subFreqText;
+        if (l3) l3.textContent = labelFreqText;
+      }
+
+      if (feedGraphUnit === 'daily') {
+        chartTitle.textContent = '최근 7일간 운동 시간 (분)';
+
+        const dayBuckets = [];
+        const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date(now);
+          d.setDate(d.getDate() - i);
+          d.setHours(0, 0, 0, 0);
+          const nextD = new Date(d);
+          nextD.setDate(d.getDate() + 1);
+
+          const bucket = records.filter(r => {
+            const rd = parseDate(r.date);
+            return rd >= d && rd < nextD;
+          });
+
+          const totalSec = bucket.reduce((s, r) => s + (Number(r.durationSec) || 0), 0);
+          const durationMin = Math.round(totalSec / 60);
+          const isToday = i === 0;
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, '0');
+          const dayNum = String(d.getDate()).padStart(2, '0');
+
+          dayBuckets.push({
+            dateStr: `${y}-${m}-${dayNum}`,
+            label: isToday ? '오늘' : `${d.getMonth()+1}/${d.getDate()}`,
+            dayName: dayNames[d.getDay()],
+            durationMin,
+            count: bucket.length,
+            isCurrent: isToday
+          });
+        }
+
+        const todayBucket = dayBuckets[dayBuckets.length - 1];
+        const todayMin = todayBucket.durationMin;
+        const targetDailyMin = 60;
+        const pctTime = Math.min(100, Math.round((todayMin / targetDailyMin) * 100));
+
+        const days7WithWorkout = dayBuckets.filter(b => b.count > 0).length;
+        const pctDays = Math.min(100, Math.round((days7WithWorkout / 7) * 100));
+
+        const todayCount = todayBucket.count;
+        const pctFreq = todayCount > 0 ? 100 : 0;
+
+        const total7Min = dayBuckets.reduce((s, b) => s + b.durationMin, 0);
+        const total7Count = dayBuckets.reduce((s, b) => s + b.count, 0);
+        const avgMin = total7Count > 0 ? Math.round(total7Min / total7Count) : 0;
+
+        if (metric1Label) metric1Label.textContent = '최근 7일:';
+        if (metric1Val) metric1Val.textContent = formatDurationKorean(total7Min);
+        if (metric2Label) metric2Label.textContent = '7일 평균:';
+        if (metric2Val) metric2Val.textContent = `${total7Count}회 (${avgMin}분)`;
+
+        updateRings({
+          subtitle: '오늘 및 최근 7일 활동 현황',
+          badge: '일일 활동 기준',
+          pctTime,
+          valTimeText: `${pctTime}%`,
+          subTimeText: `${todayMin}분 / ${targetDailyMin}분`,
+          labelTimeText: '오늘 목표 시간 달성',
+          pctDays,
+          valDaysText: `${pctDays}%`,
+          subDaysText: `${days7WithWorkout}일 / 7일`,
+          labelDaysText: '최근 7일 운동 일수',
+          pctFreq,
+          valFreqText: `${pctFreq}%`,
+          subFreqText: `${todayCount}회 완료`,
+          labelFreqText: '오늘 운동 완료 여부'
+        });
+
+        const maxM = Math.max(...dayBuckets.map(b => b.durationMin), 40);
+        barContainer.innerHTML = dayBuckets.map(b => {
+          const isSelected = selectedCalendarDate === b.dateStr;
+          const heightPx = Math.max(6, Math.round((b.durationMin / maxM) * 52));
+          let barBg = b.durationMin > 0 ? (b.isCurrent ? 'bg-[#E11D48]' : 'bg-[#18181B]') : 'bg-[#E4E4E7]';
+          if (isSelected) barBg = 'bg-[#E11D48] ring-2 ring-[#BE123C]';
+
+          return `
+            <div class="flex flex-col items-center space-y-1 flex-1 cursor-pointer group" onclick="selectCalendarDate('${b.dateStr}')" title="${b.dateStr}: ${b.durationMin}분">
+              <span class="text-[10px] font-black ${b.durationMin > 0 ? 'text-[#111113]' : 'text-[#A1A1AA]'}">${b.durationMin}분</span>
+              <div class="w-6 rounded-full ${barBg} transition-all duration-500 group-hover:scale-105" style="height: ${heightPx}px;"></div>
+              <span class="text-[10px] ${b.isCurrent ? 'font-black text-[#E11D48]' : 'font-semibold text-[#71717A]'}">${b.label}</span>
+            </div>
+          `;
+        }).join('');
+
+      } else if (feedGraphUnit === 'weekly') {
+        chartTitle.textContent = '주차별 운동 시간 (분)';
+
+        const thisMonday = getMonday(now);
+        const weekBuckets = [];
+
+        for (let i = 5; i >= 0; i--) {
+          const start = new Date(thisMonday.getTime() - i * 7 * 86400000);
+          const end = new Date(start.getTime() + 7 * 86400000);
+          const bucket = records.filter(r => {
+            const rd = parseDate(r.date);
+            return rd >= start && rd < end;
+          });
+          const totalSec = bucket.reduce((s, r) => s + (Number(r.durationSec) || 0), 0);
+          const durationMin = Math.round(totalSec / 60);
+
+          let label = `${i}주 전`;
+          if (i === 0) label = '이번 주';
+          else if (i === 1) label = '지난주';
+
+          weekBuckets.push({
+            label,
+            durationMin,
+            count: bucket.length,
+            isCurrent: i === 0
+          });
+        }
+
+        const thisWeekBucket = weekBuckets[weekBuckets.length - 1];
+        const targetWeeklyMin = 180;
+        const pctTime = Math.min(100, Math.round((thisWeekBucket.durationMin / targetWeeklyMin) * 100));
+
+        const nextMon = new Date(thisMonday.getTime() + 7 * 86400000);
+        const weekWorkoutDays = new Set(records.filter(r => {
+          const rd = parseDate(r.date);
+          return rd >= thisMonday && rd < nextMon;
+        }).map(r => r.date)).size;
+        const pctDays = Math.min(100, Math.round((weekWorkoutDays / 7) * 100));
+
+        const targetWeeklyCount = Math.max(1, Math.round((Number(userGoals.monthCount) || 12) / 4));
+        const weekCount = thisWeekBucket.count;
+        const pctFreq = Math.min(100, Math.round((weekCount / targetWeeklyCount) * 100));
+
+        const total6Min = weekBuckets.reduce((s, b) => s + b.durationMin, 0);
+        const avgWeeklyMin = Math.round(total6Min / 6);
+
+        if (metric1Label) metric1Label.textContent = '최근 6주:';
+        if (metric1Val) metric1Val.textContent = formatDurationKorean(total6Min);
+        if (metric2Label) metric2Label.textContent = '주 평균:';
+        if (metric2Val) metric2Val.textContent = formatDurationKorean(avgWeeklyMin);
+
+        updateRings({
+          subtitle: '이번 주 활동 현황',
+          badge: '주간 목표 대비',
+          pctTime,
+          valTimeText: `${pctTime}%`,
+          subTimeText: `${thisWeekBucket.durationMin}분 / ${targetWeeklyMin}분`,
+          labelTimeText: '주간 목표 시간 달성',
+          pctDays,
+          valDaysText: `${pctDays}%`,
+          subDaysText: `${weekWorkoutDays}일 / 7일`,
+          labelDaysText: '이번 주 운동 일수',
+          pctFreq,
+          valFreqText: `${pctFreq}%`,
+          subFreqText: `${weekCount}회 / ${targetWeeklyCount}회`,
+          labelFreqText: '주간 목표 횟수 달성'
+        });
+
+        const maxM = Math.max(...weekBuckets.map(b => b.durationMin), 60);
+        barContainer.innerHTML = weekBuckets.map(b => {
+          const heightPx = Math.max(8, Math.round((b.durationMin / maxM) * 52));
+          const color = b.isCurrent ? 'bg-[#E11D48]' : 'bg-[#18181B]';
+
+          return `
+            <div class="flex flex-col items-center space-y-1 flex-1">
+              <span class="text-[10px] font-black ${b.isCurrent ? 'text-[#E11D48]' : 'text-[#111113]'}">${b.durationMin}분</span>
+              <div class="w-7 rounded-full ${color} transition-all duration-500" style="height: ${heightPx}px;"></div>
+              <span class="text-[10px] ${b.isCurrent ? 'font-black text-[#E11D48]' : 'font-semibold text-[#71717A]'}">${b.label}</span>
+            </div>
+          `;
+        }).join('');
+
+      } else {
+        chartTitle.textContent = '월별 운동 시간 (분)';
+
+        const monthBuckets = [];
+        const curY = now.getFullYear();
+        const curM = now.getMonth();
+
+        for (let i = 5; i >= 0; i--) {
+          const d = new Date(curY, curM - i, 1);
+          const y = d.getFullYear();
+          const m = d.getMonth();
+          const nextM = new Date(y, m + 1, 1);
+
+          const bucket = records.filter(r => {
+            const rd = parseDate(r.date);
+            return rd >= d && rd < nextM;
+          });
+          const totalSec = bucket.reduce((s, r) => s + (Number(r.durationSec) || 0), 0);
+          const durationMin = Math.round(totalSec / 60);
+
+          monthBuckets.push({
+            label: `${m + 1}월`,
+            durationMin,
+            count: bucket.length,
+            isCurrent: i === 0
+          });
+        }
+
+        const thisMonthBucket = monthBuckets[monthBuckets.length - 1];
+        const targetMonthlyMin = 720;
+        const pctTime = Math.min(100, Math.round((thisMonthBucket.durationMin / targetMonthlyMin) * 100));
+
+        const monthWorkoutDays = new Set(records.filter(r => {
+          const rd = parseDate(r.date);
+          return rd && rd.getFullYear() === curY && rd.getMonth() === curM;
+        }).map(r => r.date)).size;
+        const totalDaysInCurMonth = new Date(curY, curM + 1, 0).getDate();
+        const pctDays = Math.min(100, Math.round((monthWorkoutDays / totalDaysInCurMonth) * 100));
+
+        const targetMonthlyCount = Number(userGoals.monthCount) || 12;
+        const monthCount = thisMonthBucket.count;
+        const pctFreq = Math.min(100, Math.round((monthCount / targetMonthlyCount) * 100));
+
+        const total6Min = monthBuckets.reduce((s, b) => s + b.durationMin, 0);
+        const avgMonthlyMin = Math.round(total6Min / 6);
+
+        if (metric1Label) metric1Label.textContent = '최근 6개월:';
+        if (metric1Val) metric1Val.textContent = formatDurationKorean(total6Min);
+        if (metric2Label) metric2Label.textContent = '월 평균:';
+        if (metric2Val) metric2Val.textContent = formatDurationKorean(avgMonthlyMin);
+
+        updateRings({
+          subtitle: `${curM + 1}월 활동 현황`,
+          badge: '월간 목표 대비',
+          pctTime,
+          valTimeText: `${pctTime}%`,
+          subTimeText: `${thisMonthBucket.durationMin}분 / ${targetMonthlyMin}분`,
+          labelTimeText: '월간 목표 시간 달성',
+          pctDays,
+          valDaysText: `${pctDays}%`,
+          subDaysText: `${monthWorkoutDays}일 / ${totalDaysInCurMonth}일`,
+          labelDaysText: '이번 달 운동 일수',
+          pctFreq,
+          valFreqText: `${pctFreq}%`,
+          subFreqText: `${monthCount}회 / ${targetMonthlyCount}회`,
+          labelFreqText: '월간 목표 횟수 달성'
+        });
+
+        const maxM = Math.max(...monthBuckets.map(b => b.durationMin), 120);
+        barContainer.innerHTML = monthBuckets.map(b => {
+          const heightPx = Math.max(8, Math.round((b.durationMin / maxM) * 52));
+          const color = b.isCurrent ? 'bg-[#E11D48]' : 'bg-[#18181B]';
+
+          return `
+            <div class="flex flex-col items-center space-y-1 flex-1">
+              <span class="text-[10px] font-black ${b.isCurrent ? 'text-[#E11D48]' : 'text-[#111113]'}">${b.durationMin}분</span>
+              <div class="w-7 rounded-full ${color} transition-all duration-500" style="height: ${heightPx}px;"></div>
+              <span class="text-[10px] ${b.isCurrent ? 'font-black text-[#E11D48]' : 'font-semibold text-[#71717A]'}">${b.label}</span>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    document.querySelectorAll('.feed-unit-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        feedGraphUnit = btn.dataset.feedUnit;
+        document.querySelectorAll('.feed-unit-btn').forEach(b => {
+          b.className = 'feed-unit-btn px-2.5 py-1 rounded-full text-[#71717A] hover:text-[#111113] transition';
+        });
+        btn.className = 'feed-unit-btn px-2.5 py-1 rounded-full bg-[#18181B] text-white shadow-sm transition';
+        renderFeedActivityCard();
+      });
+    });
+
+    // ------------------------------------------------------------
+    // 4-3. [운동 기록 탭] 동적 종목 필터 칩 바 (직접 입력 종목 자동 포함)
+    // ------------------------------------------------------------
+    function renderFeedFilterChips() {
+      const container = document.getElementById('feedFilterChipsContainer');
+      if (!container) return;
+
+      const typesSet = new Set(['런닝', '실내 자전거', '맨몸운동']);
+      records.forEach(r => {
+        if (r.type && r.type.trim()) typesSet.add(r.type.trim());
+      });
+
+      const types = ['all', ...Array.from(typesSet)];
+
+      container.innerHTML = types.map(t => {
+        const isAll = t === 'all';
+        const label = isAll ? '전체' : t;
+        const isSelected = currentFilter === t;
+        const iconColor = getTypeColorClass(t);
+        const iconHtml = isAll ? '' : `<span class="${iconColor} flex-shrink-0">${getTypeIconSvg(t, 'w-3.5 h-3.5')}</span>`;
+
+        let btnClass = isSelected
+          ? 'px-4 py-2 rounded-full bg-[#18181B] text-white transition shadow-sm flex-shrink-0 flex items-center space-x-1.5'
+          : 'px-4 py-2 rounded-full bg-white text-[#71717A] border border-black/[0.06] hover:bg-[#F8F8FA] transition flex-shrink-0 flex items-center space-x-1.5';
+
+        return `
+          <button data-filter="${escapeHtml(t)}" type="button" class="filter-chip ${btnClass}">
+            ${iconHtml}
+            <span>${escapeHtml(label)}</span>
+          </button>
+        `;
+      }).join('');
+
+      container.querySelectorAll('.filter-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentFilter = btn.dataset.filter;
+          feedVisibleLimit = 10;
+          renderFeedFilterChips();
+          renderFeedView();
+        });
+      });
+    }
+
+    // ------------------------------------------------------------
+    // 4-4. [운동 기록 탭] 운동 기록 목록 (피드) 렌더링
+    // ------------------------------------------------------------
+    function renderFeedView() {
+      let filtered = [...records];
+      filtered.sort((a, b) => parseDate(b.date).getTime() - parseDate(a.date).getTime());
+
+      if (selectedCalendarDate) {
+        filtered = filtered.filter(r => {
+          if (!r.date) return false;
+          const d = parseDate(r.date);
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          return `${y}-${m}-${day}` === selectedCalendarDate;
+        });
+      }
+
+      if (currentFilter !== 'all') {
+        filtered = filtered.filter(r => {
+          if (currentFilter === '기타') {
+            return !r.type.includes('런닝') && !r.type.includes('자전거') && !r.type.includes('맨몸');
+          }
+          return r.type === currentFilter || r.type.includes(currentFilter);
+        });
+      }
+
+      document.getElementById('feedTotalBadge').textContent = filtered.length;
+      const container = document.getElementById('feedRecordList');
+      const loadMoreContainer = document.getElementById('feedLoadMoreContainer');
+
+      if (filtered.length === 0) {
+        const isFilterActive = currentFilter !== 'all' || selectedCalendarDate !== null;
+        const emptyMsg = isFilterActive
+          ? '선택한 조건의 운동 기록이 없습니다.'
+          : '아직 등록된 운동 기록이 없습니다.';
+        const emptySub = isFilterActive
+          ? '필터를 초기화하거나 다른 날짜/종목을 선택해 보세요.'
+          : '오늘 움직인 순간을 첫 번째 기록으로 남겨보세요!';
+
+        const clearBtnHtml = isFilterActive
+          ? `<button type="button" onclick="clearAllFilters()" class="px-4 py-2.5 rounded-xl bg-white border border-[#E4E4E7] text-[#111113] hover:bg-[#F4F4F6] text-xs font-bold transition shadow-sm active:scale-95">필터 초기화 ✕</button>`
+          : '';
+
+        container.innerHTML = `
+          <div class="py-12 px-4 text-center rounded-2xl bg-[#F8F8FA] border border-black/[0.03] space-y-3.5 my-1">
+            <div class="w-12 h-12 mx-auto rounded-2xl bg-white border border-black/[0.04] shadow-sm flex items-center justify-center text-[#E11D48]">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              </svg>
+            </div>
+            <div class="space-y-1">
+              <h4 class="text-sm font-black text-[#111113]">${emptyMsg}</h4>
+              <p class="text-xs text-[#71717A] font-medium max-w-xs mx-auto leading-relaxed">${emptySub}</p>
+            </div>
+            <div class="flex items-center justify-center space-x-2 pt-1">
+              ${clearBtnHtml}
+              <button type="button" onclick="openAddModal()" class="px-4 py-2.5 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white text-xs font-black transition shadow-sm active:scale-95 flex items-center space-x-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 5v14m7-7H5"></path></svg>
+                <span>운동 기록 추가</span>
+              </button>
+            </div>
+          </div>
+        `;
+        loadMoreContainer.classList.add('hidden');
+        return;
+      }
+
+      const visibleItems = filtered.slice(0, feedVisibleLimit);
+
+      container.innerHTML = visibleItems.map(item => {
+        const d = parseDate(item.date);
+        const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+        const dayStr = dayNames[d.getDay()] || '';
+        const dateStr = item.date ? `${d.getMonth()+1}/${d.getDate()}` : '';
+        const durMin = item.durationText || Math.round((item.durationSec || 0) / 60) + '분';
+        const isBodyweight = String(item.type || '').includes('맨몸');
+        const roundLabel = isBodyweight ? `${item.rounds || 1}세트` : `${item.rounds || 1}R`;
+        const iconColorClass = getTypeColorClass(item.type);
+
+        return `
+          <div class="p-3.5 rounded-2xl bg-[#F8F8FA] hover:bg-[#F0F0F3] border border-black/[0.03] flex items-center justify-between cursor-pointer transition active:scale-[0.99]" onclick="openEditModal('${item.id}')">
+            <div class="flex items-center space-x-3 min-w-0 flex-1 pr-2">
+              <div class="w-12 py-1.5 rounded-xl bg-white border border-black/[0.04] text-center flex-shrink-0 shadow-sm">
+                <span class="text-xs font-black text-[#111113] block leading-tight">${dateStr}</span>
+                <span class="text-xs font-semibold text-[#71717A] block mt-0.5">${dayStr.slice(0, 1)}</span>
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center space-x-1.5">
+                  <span class="${iconColorClass} flex-shrink-0">${getTypeIconSvg(item.type, 'w-3.5 h-3.5')}</span>
+                  <span class="text-sm font-black text-[#111113] truncate">${escapeHtml(item.type)}</span>
+                  <span class="text-xs px-2 py-0.5 rounded-full font-bold flex-shrink-0 ${item.source === 'SmartThings' ? 'bg-[#FFF1F2] text-[#E11D48]' : 'bg-[#E4E4E7] text-[#71717A]'}">
+                    ${item.source === 'SmartThings' ? 'ST 인터벌' : '수동'}
+                  </span>
+                </div>
+                <div class="text-xs text-[#71717A] mt-1 flex items-center space-x-1.5 font-semibold truncate">
+                  <span class="px-2 py-0.5 rounded-md bg-white border border-black/[0.04] text-xs font-bold text-[#18181B]">${roundLabel}</span>
+                  ${item.notes ? `<span class="text-xs text-[#71717A] truncate">${escapeHtml(item.notes)}</span>` : ''}
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-2 text-right flex-shrink-0">
+              <span class="text-base font-black text-[#111113]">${durMin}</span>
+              <span class="text-[#A1A1AA] text-sm font-bold">&rsaquo;</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const remaining = filtered.length - visibleItems.length;
+      if (remaining > 0) {
+        const nextCount = Math.min(10, remaining);
+        loadMoreContainer.classList.remove('hidden');
+        document.getElementById('feedLoadMoreText').textContent = `더 보기 (+${nextCount}개)`;
+        document.getElementById('feedLoadMoreCounter').textContent = `(${visibleItems.length} / ${filtered.length})`;
+      } else {
+        loadMoreContainer.classList.add('hidden');
+      }
+    }
+
+    document.getElementById('btnFeedLoadMore').addEventListener('click', () => {
+      feedVisibleLimit += 10;
+      renderFeedView();
+    });
+
+    // ------------------------------------------------------------
+    // 4-2. [운동 기록 탭] 월간 캘린더 렌더링
+    // ------------------------------------------------------------
+    function renderCalendar() {
+      const year = calYear;
+      const month = calMonth;
+
+      document.getElementById('calCurrentMonthTitle').textContent = `${year}년 ${month + 1}월`;
+
+      const firstDayIndex = new Date(year, month, 1).getDay();
+      const lastDate = new Date(year, month + 1, 0).getDate();
+
+      const workoutDatesMap = {};
+      records.forEach(r => {
+        if (!r.date) return;
+        const d = parseDate(r.date);
+        if (d.getFullYear() === year && d.getMonth() === month) {
+          const dayKey = d.getDate();
+          workoutDatesMap[dayKey] = (workoutDatesMap[dayKey] || 0) + 1;
+        }
+      });
+
+      const monthWorkoutDays = Object.keys(workoutDatesMap).length;
+      document.getElementById('calMonthWorkoutCount').textContent = `${monthWorkoutDays}일 운동 완료`;
+
+      const grid = document.getElementById('calDaysGrid');
+      grid.innerHTML = '';
+
+      for (let i = 0; i < firstDayIndex; i++) {
+        grid.innerHTML += `<div class="h-9"></div>`;
+      }
+
+      const today = new Date();
+      const isCurrentMonthYear = today.getFullYear() === year && today.getMonth() === month;
+
+      for (let d = 1; d <= lastDate; d++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const count = workoutDatesMap[d] || 0;
+        const isToday = isCurrentMonthYear && today.getDate() === d;
+        const isSelected = selectedCalendarDate === dateStr;
+
+        let bgClass = 'hover:bg-[#F4F4F6] text-[#111113]';
+        if (isSelected) {
+          bgClass = 'bg-[#18181B] text-white shadow-sm font-black';
+        } else if (isToday) {
+          bgClass = 'border border-[#E11D48] text-[#E11D48] font-bold';
+        }
+
+        let dotHtml = '';
+        if (count > 0) {
+          const dotColor = isSelected ? 'bg-white' : 'bg-[#E11D48]';
+          dotHtml = `<span class="w-1.5 h-1.5 rounded-full ${dotColor} block mx-auto mt-0.5"></span>`;
+        }
+
+        grid.innerHTML += `
+          <button type="button" class="h-9 rounded-xl flex flex-col items-center justify-center relative transition ${bgClass}" onclick="selectCalendarDate('${dateStr}')">
+            <span class="text-xs leading-none">${d}</span>
+            <div class="h-2 flex items-center justify-center">${dotHtml}</div>
+          </button>
+        `;
+      }
+
+      const filterNotice = document.getElementById('calFilterNotice');
+      if (selectedCalendarDate) {
+        filterNotice.classList.remove('hidden');
+        document.getElementById('calFilterText').textContent = `${selectedCalendarDate.slice(5, 7)}월 ${selectedCalendarDate.slice(8, 10)}일 기록`;
+        document.getElementById('feedListHeading').textContent = `${selectedCalendarDate.slice(5, 7)}월 ${selectedCalendarDate.slice(8, 10)}일 기록`;
+      } else {
+        filterNotice.classList.add('hidden');
+        document.getElementById('feedListHeading').textContent = '한 번씩 쌓아온 기록';
+      }
+    }
+
+    function selectCalendarDate(dateStr) {
+      if (selectedCalendarDate === dateStr) {
+        selectedCalendarDate = null;
+      } else {
+        selectedCalendarDate = dateStr;
+      }
+      feedVisibleLimit = 10;
+      renderCalendar();
+      renderFeedActivityCard();
+      renderFeedView();
+    }
+
+    function clearAllFilters() {
+      currentFilter = 'all';
+      selectedCalendarDate = null;
+      feedVisibleLimit = 10;
+      renderFeedFilterChips();
+      renderCalendar();
+      renderFeedActivityCard();
+      renderFeedView();
+      showToast('모든 필터가 초기화되었습니다.');
+    }
+
+    document.getElementById('btnClearDateFilter').addEventListener('click', () => {
+      selectedCalendarDate = null;
+      feedVisibleLimit = 10;
+      renderCalendar();
+      renderFeedActivityCard();
+      renderFeedView();
+    });
+
+    document.getElementById('btnCalPrevMonth').addEventListener('click', () => {
+      calMonth--;
+      if (calMonth < 0) { calMonth = 11; calYear--; }
+      renderCalendar();
+    });
+
+    document.getElementById('btnCalNextMonth').addEventListener('click', () => {
+      calMonth++;
+      if (calMonth > 11) { calMonth = 0; calYear++; }
+      renderCalendar();
+    });
+
+    document.getElementById('btnCalToday').addEventListener('click', () => {
+      const now = new Date();
+      calYear = now.getFullYear();
+      calMonth = now.getMonth();
+      selectedCalendarDate = null;
+      feedVisibleLimit = 10;
+      renderCalendar();
+      renderFeedActivityCard();
+      renderFeedView();
+    });
+
+    function showDotInfo(date, duration, type) {
+      showToast(`${date.slice(5, 10)} ${type}: ${duration}`);
+    }
+
+    function getTypeColorClass(type) {
+      const t = String(type || '');
+      if (t.includes('런닝') || t.includes('러닝') || t.includes('달리기')) return 'text-[#E11D48]';
+      if (t.includes('자전거') || t.includes('싸이클')) return 'text-[#18181B]';
+      if (t.includes('맨몸') || t.includes('타바타') || t.includes('근력')) return 'text-[#71717A]';
+      if (t.includes('수영')) return 'text-[#0284C7]';
+      if (t.includes('등산')) return 'text-[#059669]';
+      if (t.includes('요가') || t.includes('필라테스')) return 'text-[#7C3AED]';
+      return 'text-[#E11D48]';
+    }
+
+    function getTypeIconSvg(type, cls = 'w-4 h-4') {
+      const t = String(type || '');
+      if (t.includes('런닝') || t.includes('러닝') || t.includes('달리기')) {
+        return `<svg class="${cls}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>`;
+      }
+      if (t.includes('자전거') || t.includes('싸이클')) {
+        return `<svg class="${cls}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="3.5" stroke-width="2"></circle><circle cx="18.5" cy="17.5" r="3.5" stroke-width="2"></circle><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 6a1 1 0 100-2 1 1 0 000 2zm-3 11.5V14l-3-3 4-3 2 3h2"></path></svg>`;
+      }
+      if (t.includes('맨몸') || t.includes('타바타') || t.includes('근력')) {
+        return `<svg class="${cls}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2M9 12h6m-6-3v6m6-6v6"></path></svg>`;
+      }
+      if (t.includes('수영')) {
+        return `<svg class="${cls}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M3 19c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2"></path></svg>`;
+      }
+      if (t.includes('등산')) {
+        return `<svg class="${cls}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 20h18L14 7l-4 6-3-4-4 11z"></path></svg>`;
+      }
+      return `<svg class="${cls}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+    }
+
+    // ------------------------------------------------------------
+    // 모달 & 인터랙션
+    // ------------------------------------------------------------
+    const recordModal = document.getElementById('recordModal');
+    const goalModal = document.getElementById('goalModal');
+    const sheetModal = document.getElementById('sheetModal');
+
+    document.querySelectorAll('.period-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentPeriod = btn.dataset.period;
+        document.querySelectorAll('.period-btn').forEach(b => {
+          b.classList.remove('bg-white', 'text-[#111113]', 'shadow-sm', 'font-black');
+          b.classList.add('text-[#71717A]');
+        });
+        btn.classList.add('bg-white', 'text-[#111113]', 'shadow-sm', 'font-black');
+        btn.classList.remove('text-[#71717A]');
+        renderGrowthView();
+      });
+    });
+
+    document.getElementById('btnOpenSheetModal').addEventListener('click', () => {
+      document.getElementById('inputGasUrl').value = getActiveGasUrl();
+      updateBackupCount();
+      sheetModal.classList.remove('hidden');
+    });
+    document.getElementById('btnCloseSheetModal').addEventListener('click', () => sheetModal.classList.add('hidden'));
+
+    document.getElementById('btnSaveGasUrl').addEventListener('click', () => {
+      const url = document.getElementById('inputGasUrl').value.trim();
+      if (url) {
+        localStorage.setItem(STORAGE_KEY_GAS_URL, url);
+        sheetModal.classList.add('hidden');
+        loadData(true);
+      } else {
+        showToast('올바른 웹 앱 URL을 입력해 주세요.');
+      }
+    });
+
+    document.getElementById('btnSyncNow').addEventListener('click', () => {
+      sheetModal.classList.add('hidden');
+      loadData(true);
+    });
+
+    document.getElementById('btnClearGasUrl').addEventListener('click', () => {
+      localStorage.removeItem(STORAGE_KEY_GAS_URL);
+      document.getElementById('inputGasUrl').value = DEFAULT_GAS_URL;
+      showToast('기본 시트 URL로 복원되었습니다.');
+      loadData();
+    });
+
+    function updateBackupCount() {
+      const label = document.getElementById('backupCountLabel');
+      if (label) {
+        label.textContent = `${records.length}개 기록 보관 중`;
+      }
+    }
+
+    function exportBackup() {
+      const backupData = {
+        app: 'MyWorkoutStory',
+        version: 2,
+        exportedAt: new Date().toISOString(),
+        userGoals: userGoals,
+        records: records
+      };
+
+      const jsonStr = JSON.stringify(backupData, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const now = new Date();
+      const filename = `myworkout_backup_${now.getFullYear()}${String(now.getMonth()+1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}.json`;
+
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+
+      showToast('백업 파일이 저장되었습니다.');
+    }
+
+    document.getElementById('btnExportBackup').addEventListener('click', exportBackup);
+
+    document.getElementById('btnCopyBackupClipboard').addEventListener('click', () => {
+      const backupData = {
+        app: 'MyWorkoutStory',
+        version: 2,
+        exportedAt: new Date().toISOString(),
+        userGoals: userGoals,
+        records: records
+      };
+      navigator.clipboard.writeText(JSON.stringify(backupData, null, 2))
+        .then(() => showToast('클립보드에 백업 데이터가 복사되었습니다.'))
+        .catch(() => showToast('클립보드 복사에 실패했습니다.'));
+    });
+
+    document.getElementById('btnImportBackup').addEventListener('click', () => {
+      document.getElementById('inputBackupFile').click();
+    });
+
+    document.getElementById('inputBackupFile').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const parsed = JSON.parse(event.target.result);
+          let incomingRecords = [];
+
+          if (Array.isArray(parsed)) {
+            incomingRecords = parsed;
+          } else if (parsed && Array.isArray(parsed.records)) {
+            incomingRecords = parsed.records;
+            if (parsed.userGoals) {
+              userGoals = { ...userGoals, ...parsed.userGoals };
+              localStorage.setItem(STORAGE_KEY_GOALS, JSON.stringify(userGoals));
+            }
+          } else {
+            showToast('올바른 백업 파일 형식이 아닙니다.');
+            return;
+          }
+
+          if (incomingRecords.length === 0) {
+            showToast('가져올 운동 내역이 없습니다.');
+            return;
+          }
+
+          const doMerge = confirm(
+            `총 ${incomingRecords.length}개의 기록을 가져옵니다.\n\n[확인]: 기존 기록과 병합 (중복 제외)\n[취소]: 복구 취소`
+          );
+          if (!doMerge) return;
+
+          const existingIds = new Set(records.map(r => String(r.id)));
+          let addedCount = 0;
+
+          incomingRecords.forEach(r => {
+            if (!existingIds.has(String(r.id))) {
+              records.push(r);
+              existingIds.add(String(r.id));
+              addedCount++;
+            }
+          });
+
+          saveLocal();
+          sheetModal.classList.add('hidden');
+          showToast(`${addedCount}개의 새 기록이 성공적으로 복구되었습니다!`);
+        } catch (err) {
+          console.error(err);
+          showToast('파일을 읽는 중 오류가 발생했습니다.');
+        } finally {
+          e.target.value = '';
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    // 목표 설정 모달
+    document.getElementById('btnOpenGoalModal').addEventListener('click', () => {
+      document.getElementById('inputMonthGoalCount').value = userGoals.monthCount || 12;
+      document.getElementById('inputMonthGoalReward').value = userGoals.monthReward || '';
+      document.getElementById('inputYearGoalCount').value = userGoals.yearCount || 120;
+      document.getElementById('inputYearGoalReward').value = userGoals.yearReward || '';
+      goalModal.classList.remove('hidden');
+    });
+    document.getElementById('btnCloseGoalModal').addEventListener('click', () => goalModal.classList.add('hidden'));
+    document.getElementById('btnCancelGoal').addEventListener('click', () => goalModal.classList.add('hidden'));
+
+    document.getElementById('goalForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      userGoals.monthCount = Number(document.getElementById('inputMonthGoalCount').value) || 12;
+      userGoals.monthReward = document.getElementById('inputMonthGoalReward').value.trim() || '치팅데이 맛있는 치킨 먹기';
+      userGoals.yearCount = Number(document.getElementById('inputYearGoalCount').value) || 120;
+      userGoals.yearReward = document.getElementById('inputYearGoalReward').value.trim() || '제주도 힐링 여행';
+
+      localStorage.setItem(STORAGE_KEY_GOALS, JSON.stringify(userGoals));
+      goalModal.classList.add('hidden');
+      renderGoalCard();
+      showToast('목표 설정이 저장되었습니다.');
+    });
+
+    let isRunIntervalOpen = false;
+    function toggleRunInterval(forceState) {
+      isRunIntervalOpen = (typeof forceState === 'boolean') ? forceState : !isRunIntervalOpen;
+      const box = document.getElementById('boxRunInterval');
+      const icon = document.getElementById('toggleRunIntervalIcon');
+      if (box && icon) {
+        if (isRunIntervalOpen) {
+          box.classList.remove('hidden');
+          icon.textContent = '✕';
+          icon.classList.add('bg-[#E11D48]', 'text-white');
+          icon.classList.remove('bg-[#E4E4E7]', 'text-[#111113]');
+        } else {
+          box.classList.add('hidden');
+          icon.textContent = '+';
+          icon.classList.remove('bg-[#E11D48]', 'text-white');
+          icon.classList.add('bg-[#E4E4E7]', 'text-[#111113]');
+        }
+      }
+    }
+    document.getElementById('btnToggleRunInterval')?.addEventListener('click', () => toggleRunInterval());
+
+    function selectType(type) {
+      selectedType = type;
+      document.querySelectorAll('.type-btn').forEach(btn => {
+        if (btn.dataset.type === type) {
+          btn.classList.add('bg-[#FFF1F2]', 'text-[#BE123C]', 'border-[#FFE4E6]');
+          btn.classList.remove('bg-white', 'text-[#71717A]', 'border-[#E4E4E7]');
+        } else {
+          btn.classList.remove('bg-[#FFF1F2]', 'text-[#BE123C]', 'border-[#FFE4E6]');
+          btn.classList.add('bg-white', 'text-[#71717A]', 'border-[#E4E4E7]');
+        }
+      });
+
+      const colRun = document.getElementById('colRunningDistance');
+      const colBike = document.getElementById('colCyclingDistance');
+      const colRounds = document.getElementById('colRounds');
+      const extraRun = document.getElementById('extraFieldsRunning');
+      const extraBike = document.getElementById('extraFieldsCycling');
+      const extraBody = document.getElementById('extraFieldsBodyweight');
+      const labelRounds = document.getElementById('labelRoundsOrSets');
+      const notesInput = document.getElementById('inputNotes');
+
+      colRun.classList.add('hidden');
+      colBike.classList.add('hidden');
+      colRounds.classList.add('hidden');
+      extraRun.classList.add('hidden');
+      extraBike.classList.add('hidden');
+      extraBody.classList.add('hidden');
+
+      if (type === '런닝') {
+        colRun.classList.remove('hidden');
+        extraRun.classList.remove('hidden');
+        notesInput.placeholder = '예: 다리 피로도 낮고 호흡 안정적';
+      } else if (type === '실내 자전거') {
+        colBike.classList.remove('hidden');
+        extraBike.classList.remove('hidden');
+        notesInput.placeholder = '예: 다리 회복용 가벼운 스피닝';
+      } else if (type === '맨몸운동') {
+        colRounds.classList.remove('hidden');
+        labelRounds.textContent = '세트 수 (세트)';
+        extraBody.classList.remove('hidden');
+        notesInput.placeholder = '예: 코어 집중 루틴';
+      } else {
+        colRounds.classList.remove('hidden');
+        labelRounds.textContent = '인터벌 라운드 / 세트';
+        notesInput.placeholder = '오늘 컨디션이나 메모를 남겨보세요';
+      }
+    }
+
+    document.querySelectorAll('.bw-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const move = chip.dataset.move;
+        const input = document.getElementById('inputBodyMoves');
+        const current = input.value.trim();
+        if (!current) {
+          input.value = move;
+        } else if (!current.includes(move)) {
+          input.value = `${current}, ${move}`;
+        }
+      });
+    });
+
+    function clearExtraFields() {
+      document.getElementById('inputRunDistance').value = '';
+      document.getElementById('inputBikeLevel').value = '';
+      document.getElementById('inputBikeDistance').value = '';
+      document.getElementById('inputBodyMoves').value = '';
+      const runRounds = document.getElementById('inputRunRounds');
+      if (runRounds) runRounds.value = '1';
+      const bikeRounds = document.getElementById('inputBikeRounds');
+      if (bikeRounds) bikeRounds.value = '1';
+      toggleRunInterval(false);
+    }
+
+    function openAddModal() {
+      document.getElementById('modalTitle').textContent = '운동 기록 추가';
+      document.getElementById('editRecordId').value = '';
+      clearExtraFields();
+      selectType('런닝');
+      document.getElementById('customTypeInput').value = '';
+      document.getElementById('inputDurationMin').value = '60';
+      document.getElementById('inputRounds').value = '1';
+      document.getElementById('inputNotes').value = '';
+
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      document.getElementById('inputDateTime').value = now.toISOString().slice(0, 16);
+
+      document.getElementById('btnDeleteRecord').classList.add('hidden');
+      recordModal.classList.remove('hidden');
+    }
+
+    function openEditModal(id) {
+      const item = records.find(r => r.id === id);
+      if (!item) return;
+
+      document.getElementById('modalTitle').textContent = '운동 기록 수정';
+      document.getElementById('editRecordId').value = item.id;
+      clearExtraFields();
+
+      const standards = ['런닝', '실내 자전거', '맨몸운동'];
+      if (standards.includes(item.type)) {
+        selectType(item.type);
+        document.getElementById('customTypeInput').value = '';
+      } else {
+        selectType('');
+        document.getElementById('customTypeInput').value = item.type;
+      }
+
+      document.getElementById('inputDurationMin').value = Math.max(1, Math.round((item.durationSec || 0) / 60));
+      document.getElementById('inputRounds').value = item.rounds || 1;
+      const runRounds = document.getElementById('inputRunRounds');
+      if (runRounds) runRounds.value = item.rounds || 1;
+      const bikeRounds = document.getElementById('inputBikeRounds');
+      if (bikeRounds) bikeRounds.value = item.rounds || 1;
+
+      let remainNotes = String(item.notes || '').trim();
+      if (item.type === '런닝') {
+        const m = remainNotes.match(/^(\d+(?:\.\d+)?)km(?:\s*·\s*|$)/);
+        if (m) {
+          document.getElementById('inputRunDistance').value = m[1];
+          remainNotes = remainNotes.slice(m[0].length).trim();
+        }
+        if (item.rounds && item.rounds > 1) {
+          toggleRunInterval(true);
+        } else {
+          toggleRunInterval(false);
+        }
+      } else if (item.type === '실내 자전거') {
+        const mLvl = remainNotes.match(/^강도\s*(\d+)단(?:\s*·\s*|$)/);
+        if (mLvl) {
+          document.getElementById('inputBikeLevel').value = mLvl[1];
+          remainNotes = remainNotes.slice(mLvl[0].length).trim();
+        }
+        const mDist = remainNotes.match(/^(\d+(?:\.\d+)?)km(?:\s*·\s*|$)/);
+        if (mDist) {
+          document.getElementById('inputBikeDistance').value = mDist[1];
+          remainNotes = remainNotes.slice(mDist[0].length).trim();
+        }
+      }
+      document.getElementById('inputNotes').value = remainNotes;
+
+      if (item.date) {
+        const d = parseDate(item.date);
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        document.getElementById('inputDateTime').value = d.toISOString().slice(0, 16);
+      }
+
+      document.getElementById('btnDeleteRecord').classList.remove('hidden');
+      recordModal.classList.remove('hidden');
+    }
+
+    document.getElementById('btnAddRecordMain').addEventListener('click', openAddModal);
+    document.getElementById('btnCloseRecordModal').addEventListener('click', () => recordModal.classList.add('hidden'));
+
+    document.querySelectorAll('.type-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectType(btn.dataset.type);
+        document.getElementById('customTypeInput').value = '';
+      });
+    });
+
+    document.getElementById('customTypeInput').addEventListener('input', (e) => {
+      if (e.target.value.trim() !== '') {
+        selectType('');
+      }
+    });
+
+    function buildCombinedNotes(type, rawNotes) {
+      const tags = [];
+      if (type === '런닝') {
+        const dist = document.getElementById('inputRunDistance').value.trim();
+        if (dist) tags.push(`${dist}km`);
+      } else if (type === '실내 자전거') {
+        const lvl = document.getElementById('inputBikeLevel').value.trim();
+        const dist = document.getElementById('inputBikeDistance').value.trim();
+        if (lvl) tags.push(`강도 ${lvl}단`);
+        if (dist) tags.push(`${dist}km`);
+      } else if (type === '맨몸운동') {
+        const moves = document.getElementById('inputBodyMoves').value.trim();
+        if (moves) tags.push(moves);
+      }
+      if (rawNotes) tags.push(rawNotes);
+      return tags.join(' · ');
+    }
+
+    document.getElementById('recordForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = document.getElementById('editRecordId').value;
+      const customType = document.getElementById('customTypeInput').value.trim();
+      const finalType = customType || selectedType || '운동';
+
+      // 종목별 맞춤 입력단에서 라운드/세트 수 동기화
+      if (finalType === '런닝') {
+        const runR = Number(document.getElementById('inputRunRounds')?.value);
+        document.getElementById('inputRounds').value = (isRunIntervalOpen && runR > 0) ? runR : 1;
+      } else if (finalType === '실내 자전거') {
+        const bikeR = Number(document.getElementById('inputBikeRounds')?.value);
+        document.getElementById('inputRounds').value = (bikeR > 0) ? bikeR : 1;
+      }
+
+      const durationMin = Number(document.getElementById('inputDurationMin').value) || 60;
+      const durationSec = durationMin * 60;
+      const durationText = `${durationMin}분`;
+      const rounds = Number(document.getElementById('inputRounds').value) || 1;
+      const rawNotes = document.getElementById('inputNotes').value.trim();
+      const notes = buildCombinedNotes(finalType, rawNotes);
+      const rawDate = document.getElementById('inputDateTime').value;
+      const dateStr = rawDate ? rawDate.replace('T', ' ') + ':00' : getFormattedDate(0, new Date().getHours(), new Date().getMinutes());
+
+      const gasUrl = getActiveGasUrl();
+
+      if (!id) {
+        const newRecord = {
+          id: 'rec_' + Date.now(),
+          date: dateStr,
+          type: finalType,
+          durationSec: durationSec,
+          durationText: durationText,
+          rounds: rounds,
+          notes: notes,
+          source: '수동'
+        };
+        records.unshift(newRecord);
+        saveLocal();
+        showToast('새 운동 기록이 추가되었습니다!');
+        if (gasUrl) {
+          fetch(gasUrl, { method: 'POST', body: JSON.stringify({ action: 'add', ...newRecord }) }).catch(console.error);
+        }
+      } else {
+        const item = records.find(r => r.id === id);
+        if (item) {
+          item.type = finalType;
+          item.durationSec = durationSec;
+          item.durationText = durationText;
+          item.rounds = rounds;
+          item.notes = notes;
+          item.date = dateStr;
+          saveLocal();
+          showToast('운동 기록이 수정되었습니다.');
+          if (gasUrl) {
+            fetch(gasUrl, { method: 'POST', body: JSON.stringify({ action: 'update', id: item.id, type: finalType, notes: notes }) }).catch(console.error);
+          }
+        }
+      }
+
+      recordModal.classList.add('hidden');
+    });
+
+    document.getElementById('btnDeleteRecord').addEventListener('click', () => {
+      const id = document.getElementById('editRecordId').value;
+      if (!id || !confirm('이 운동 기록을 삭제하시겠습니까?')) return;
+      records = records.filter(r => r.id !== id);
+      saveLocal();
+      showToast('운동 기록이 삭제되었습니다.');
+      const gasUrl = getActiveGasUrl();
+      if (gasUrl) {
+        fetch(gasUrl, { method: 'POST', body: JSON.stringify({ action: 'delete', id: id }) }).catch(console.error);
+      }
+      recordModal.classList.add('hidden');
+    });
+
+    // 초기 실행
+    loadData();
+
+    // ============================================================
+    // PWA Service Worker 등록 및 설치(Install) 제어
+    // ============================================================
+    let deferredInstallPrompt = null;
+    const btnInstallPwa = document.getElementById('btnInstallPwa');
+    const btnModalInstall = document.getElementById('btnModalInstall');
+    const installStatusBadge = document.getElementById('installStatusBadge');
+    const installGuideModal = document.getElementById('installGuideModal');
+    const btnCloseInstallGuideModal = document.getElementById('btnCloseInstallGuideModal');
+
+    function showInstallGuideModal() {
+      if (installGuideModal) {
+        installGuideModal.classList.remove('hidden');
+      }
+    }
+
+    if (btnCloseInstallGuideModal && installGuideModal) {
+      btnCloseInstallGuideModal.addEventListener('click', () => {
+        installGuideModal.classList.add('hidden');
+      });
+    }
+
+    // Secure Context(localhost 또는 https)일 때 서비스 워커 등록
+    const isSecureContextPwa = window.location.protocol === 'https:' ||
+                               window.location.hostname === 'localhost' ||
+                               window.location.hostname === '127.0.0.1';
+
+    if ('serviceWorker' in navigator && isSecureContextPwa) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => {
+            console.log('FitLog PWA ServiceWorker 등록 성공:', reg.scope);
+          })
+          .catch(err => {
+            console.warn('FitLog PWA ServiceWorker 등록 실패:', err);
+          });
+      });
+    }
+
+    // 크롬 PWA 설치 가능 이벤트 감지
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      if (btnInstallPwa) {
+        btnInstallPwa.classList.remove('hidden');
+        btnInstallPwa.classList.add('inline-flex');
+      }
+      if (installStatusBadge) {
+        installStatusBadge.textContent = '설치 가능';
+        installStatusBadge.className = 'text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full';
+      }
+    });
+
+    // 앱 설치 완료 감지
+    window.addEventListener('appinstalled', () => {
+      deferredInstallPrompt = null;
+      if (btnInstallPwa) {
+        btnInstallPwa.classList.add('hidden');
+      }
+      if (installStatusBadge) {
+        installStatusBadge.textContent = '설치 완료';
+        installStatusBadge.className = 'text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full';
+      }
+      showToast('🎉 앱이 성공적으로 설치되었습니다!');
+    });
+
+    async function handleInstallTrigger() {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        const choice = await deferredInstallPrompt.userChoice;
+        if (choice.outcome === 'accepted') {
+          showToast('앱 설치를 진행합니다.');
+        }
+        deferredInstallPrompt = null;
+        if (btnInstallPwa) btnInstallPwa.classList.add('hidden');
+      } else {
+        // file:// 프로토콜이거나 브라우저 프롬프트 준비 전일 때 친절한 가이드 모달 띄우기
+        showInstallGuideModal();
+      }
+    }
+
+    if (btnInstallPwa) {
+      btnInstallPwa.addEventListener('click', handleInstallTrigger);
+    }
+    if (btnModalInstall) {
+      btnModalInstall.addEventListener('click', handleInstallTrigger);
+    }
+
+    // 독립 앱(Standalone) 모드로 이미 실행 중인지 확인
+    const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    if (isStandaloneMode) {
+      if (btnInstallPwa) btnInstallPwa.classList.add('hidden');
+      if (installStatusBadge) {
+        installStatusBadge.textContent = '앱 실행 중';
+        installStatusBadge.className = 'text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full';
+      }
+    } else {
+      // 일반 브라우저에서는 항상 상단 설치 버튼 활성화하여 언제든 가이드/설치 가능하도록 제공
+      if (btnInstallPwa) {
+        btnInstallPwa.classList.remove('hidden');
+        btnInstallPwa.classList.add('inline-flex');
+      }
+      if (installStatusBadge) {
+        installStatusBadge.textContent = isSecureContextPwa ? '설치 대기' : '로컬 서버 필요';
+        installStatusBadge.className = isSecureContextPwa ? 'text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full' : 'text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full';
+      }
+    }
+  </script>
+</body>
+</html>
